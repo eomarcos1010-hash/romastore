@@ -1,610 +1,2202 @@
-
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
-
-:root {
-  --bg: #08070f;
-  --surface: #0f0d1c;
-  --surface-2: #151126;
-  --surface-3: #1b1630;
-  --border: #2c2343;
-  --purple: #7c3cff;
-  --purple-light: #b18aff;
-  --text: #f7f3ff;
-  --muted: #968ba9;
-  --green: #36d399;
-  --danger: #ff5f7a;
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  min-height: 100vh;
-  background:
-    radial-gradient(circle at 80% 0%, rgba(103, 44, 207, .13), transparent 35%),
-    var(--bg);
-  color: var(--text);
-  font-family: "Inter", sans-serif;
-}
-
-button,
-input,
-textarea,
-select {
-  font: inherit;
-}
-
-button {
-  cursor: pointer;
-}
-
-button,
-input,
-textarea,
-select {
-  outline-color: var(--purple);
-}
-
-button,
-a {
-  -webkit-tap-highlight-color: transparent;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-[hidden] {
-  display: none !important;
-}
-
-/* ESTRUTURA */
-
-.dashboard-layout {
-  min-height: 100vh;
-  display: flex;
-}
-
-.sidebar {
-  width: 260px;
-  min-height: 100vh;
-  padding: 28px 18px;
-  display: flex;
-  flex-direction: column;
-  background: #0c0a15;
-  border-right: 1px solid var(--border);
-}
-
-.sidebar-brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 0 8px 30px;
-  border-bottom: 1px solid var(--border);
-}
-
-.brand-icon {
-  width: 42px;
-  height: 42px;
-  display: grid;
-  place-items: center;
-  border-radius: 13px;
-  background: linear-gradient(135deg, #a878ff, #4b16b9);
-  font-size: 24px;
-  font-weight: 800;
-}
-
-.sidebar-brand strong {
-  display: block;
-  font-size: 16px;
-}
-
-.sidebar-brand small {
-  display: block;
-  margin-top: 5px;
-  color: var(--muted);
-  font-size: 10px;
-}
-
-.sidebar-nav {
-  display: grid;
-  gap: 8px;
-  margin-top: 28px;
-}
-
-.nav-button {
-  padding: 13px 14px;
-  text-align: left;
-  color: #a89dbd;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 11px;
-  font-size: 12px;
-  font-weight: 600;
-  transition: .2s;
-}
-
-.nav-button:hover,
-.nav-button.active {
-  color: white;
-  background: linear-gradient(135deg, #6c31e8, #40169c);
-  border-color: #8051dd;
-}
-
-.view-store {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: auto;
-  padding: 13px 14px;
-  color: #d6c8f0;
-  background: #171126;
-  border: 1px solid var(--border);
-  border-radius: 11px;
-  font-size: 12px;
-}
-
-/* ÁREA PRINCIPAL */
-
-.dashboard-main {
-  width: 100%;
-  min-width: 0;
-  padding: 32px;
-}
-
-.dashboard-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 28px;
-}
-
-.dashboard-header small {
-  color: var(--purple-light);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1.8px;
-}
-
-.dashboard-header h1 {
-  margin-top: 8px;
-  font-size: clamp(25px, 3vw, 36px);
-}
-
-.save-top-button,
-.primary-button,
-.secondary-button,
-.quick-actions button {
-  border-radius: 10px;
-  padding: 12px 16px;
-  font-size: 12px;
-  font-weight: 700;
-  transition: .2s;
-}
-
-.save-top-button,
-.primary-button {
-  color: white;
-  background: linear-gradient(135deg, #7135ff, #4b17d5);
-  border: 1px solid transparent;
-}
-
-.save-top-button:hover,
-.primary-button:hover {
-  filter: brightness(1.15);
-}
-
-.secondary-button {
-  color: #d6c9eb;
-  background: transparent;
-  border: 1px solid var(--border);
-}
-
-.secondary-button:hover {
-  background: var(--surface-3);
-}
-
-.dashboard-section {
-  display: none;
-}
-
-.dashboard-section.active {
-  display: block;
-}
-
-/* CARDS */
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-  margin-bottom: 18px;
-}
-
-.stat-card,
-.panel-card {
-  background: rgba(15, 13, 28, .95);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-}
-
-.stat-card {
-  padding: 22px;
-}
-
-.stat-card span {
-  display: block;
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.stat-card strong {
-  display: block;
-  margin-top: 12px;
-  font-size: 32px;
-}
-
-.panel-card {
-  padding: 24px;
-  margin-bottom: 18px;
-}
-
-.panel-heading {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 22px;
-}
-
-.panel-heading h2 {
-  font-size: 19px;
-}
-
-.panel-heading p {
-  margin-top: 8px;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.6;
-}
-
-.quick-actions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.quick-actions button {
-  color: #ddd2f4;
-  background: #171126;
-  border: 1px solid var(--border);
-  text-align: left;
-}
-
-.quick-actions button:hover {
-  color: white;
-  border-color: var(--purple);
-  background: #24183b;
-}
-
-/* FORMULÁRIOS */
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
-}
-
-.form-grid label,
-.support-field {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  color: #c8bada;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.form-grid .full {
-  grid-column: 1 / -1;
-}
-
-input,
-textarea,
-select {
-  width: 100%;
-  color: white;
-  background: #0b0914;
-  border: 1px solid #33284c;
-  border-radius: 10px;
-  padding: 13px;
-  font-size: 12px;
-}
-
-textarea {
-  resize: vertical;
-  min-height: 90px;
-}
-
-input:focus,
-textarea:focus,
-select:focus {
-  border-color: var(--purple);
-}
-
-.form-actions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.image-preview {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 15px;
-  border: 1px dashed #3b2b58;
-  border-radius: 12px;
-  background: #0b0914;
-}
-
-.image-preview span {
-  color: var(--muted);
-  font-size: 11px;
-}
-
-.image-preview img {
-  width: 100%;
-  max-height: 230px;
-  object-fit: contain;
-  border-radius: 9px;
-  background: #08070d;
-}
-
-.editor-form-card {
-  border-color: #6540a5;
-}
-
-/* LISTAS DE EDIÇÃO */
-
-.editor-list {
-  display: grid;
-  gap: 12px;
-}
-
-.editor-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 15px;
-  padding: 14px;
-  background: #121020;
-  border: 1px solid #2b2141;
-  border-radius: 12px;
-}
-
-.editor-item-main {
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  min-width: 0;
-}
-
-.editor-item-image {
-  width: 58px;
-  height: 58px;
-  flex-shrink: 0;
-  object-fit: contain;
-  border-radius: 9px;
-  background: #08070d;
-  border: 1px solid #33264c;
-}
-
-.editor-item h3 {
-  font-size: 13px;
-  overflow-wrap: anywhere;
-}
-
-.editor-item p {
-  margin-top: 6px;
-  color: var(--muted);
-  font-size: 11px;
-}
-
-.editor-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.editor-actions button {
-  padding: 9px 11px;
-  border-radius: 8px;
-  font-size: 11px;
-  font-weight: 700;
-  color: #d8cdf0;
-  background: #1c1530;
-  border: 1px solid #3a2b56;
-}
-
-.editor-actions button:hover {
-  border-color: var(--purple);
-  color: white;
-}
-
-.editor-actions .delete-button {
-  color: #ff9caf;
-  border-color: #673044;
-}
-
-.close-button {
-  width: 30px;
-  height: 30px;
-  color: #bcaed1;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 20px;
-}
-
-/* SUPORTE */
-
-.support-form {
-  display: grid;
-  gap: 18px;
-}
-
-.support-field span {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.support-field img {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-}
-
-/* TOAST */
-
-.toast {
-  position: fixed;
-  right: 25px;
-  bottom: 25px;
-  max-width: calc(100% - 50px);
-  padding: 14px 18px;
-  color: white;
-  background: #241641;
-  border: 1px solid #8251d8;
-  border-radius: 10px;
-  font-size: 12px;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(12px);
-  transition: .25s;
-}
-
-.toast.show {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* RESPONSIVO */
-
-@media (max-width: 900px) {
-  .dashboard-layout {
-    display: block;
+const PRODUCTS_KEY = "roma_store_products";
+const CATEGORIES_KEY = "roma_store_categories";
+const CONFIG_KEY = "roma_store_config";
+
+
+const defaultProducts = [
+  {
+    id: 1,
+    name: "Otimização Avançada",
+    category: "otimizacao",
+    price: 34.99,
+    oldPrice: 45,
+    rating: "5.0",
+    status: "active",
+    image: "",
+    images: [],
+    purchaseLink: "#",
+    descriptionTitle: "OTIMIZAÇÃO AVANÇADA",
+    description: "Descrição do produto."
   }
+];
 
-  .sidebar {
-    width: 100%;
-    min-height: auto;
-    padding: 18px;
+
+const defaultCategories = [
+  {
+    id: "otimizacao",
+    name: "Otimização",
+    image: ""
+  },
+  {
+    id: "windows",
+    name: "Windows",
+    image: ""
+  },
+  {
+    id: "personalizacao",
+    name: "Personalização",
+    image: ""
+  },
+  {
+    id: "ferramentas",
+    name: "Ferramentas",
+    image: ""
   }
+];
 
-  .sidebar-nav {
-    display: flex;
-    overflow-x: auto;
-    margin-top: 18px;
-  }
 
-  .nav-button {
-    white-space: nowrap;
-  }
+const defaultConfig = {
+  storeName: "roma store",
+  storeDescription: "Sua loja de tecnologia.",
+  heroImage: "assets/Identidade Visual Roma Store.png",
+  discord: "https://discord.gg/eKUaZD97aD",
+  whatsapp: "https://wa.me/5561999069108",
+  tiktok: "https://www.tiktok.com/@roma.zx0",
+  instagram: "https://www.instagram.com/roma.zx0/"
+};
 
-  .view-store {
-    margin-top: 18px;
-  }
 
-  .dashboard-main {
-    padding: 24px 18px;
+const $ = id => document.getElementById(id);
+
+
+function clone(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+
+function load(key, fallback) {
+
+  try {
+
+    const saved = localStorage.getItem(key);
+
+    if (!saved) {
+      return clone(fallback);
+    }
+
+    const parsed = JSON.parse(saved);
+
+    return parsed;
+
+  } catch (error) {
+
+    console.error(
+      `Erro ao carregar ${key}:`,
+      error
+    );
+
+    return clone(fallback);
   }
 }
 
-@media (max-width: 650px) {
-  .dashboard-header {
-    align-items: flex-start;
-    flex-direction: column;
-  }
 
-  .stats-grid,
-  .form-grid,
-  .quick-actions {
-    grid-template-columns: 1fr;
-  }
+function save(key, value) {
 
-  .form-grid .full {
-    grid-column: auto;
-  }
+  try {
 
-  .panel-card {
-    padding: 17px;
-  }
+    localStorage.setItem(
+      key,
+      JSON.stringify(value)
+    );
 
-  .editor-item {
-    align-items: flex-start;
-    flex-direction: column;
-  }
+    return true;
 
-  .editor-actions {
-    width: 100%;
-  }
+  } catch (error) {
 
-  .editor-actions button {
-    flex: 1;
+    console.error(
+      `Erro ao salvar ${key}:`,
+      error
+    );
+
+    showToast(
+      "Não foi possível salvar os dados."
+    );
+
+    return false;
   }
-}input[type="file"] {
-  padding: 10px;
-  cursor: pointer;
-  color: #c8bada;
-  background: #0b0914;
-  border: 1px solid #33284c;
 }
 
-input[type="file"]::file-selector-button {
-  margin-right: 10px;
-  padding: 9px 12px;
-  color: white;
-  background: linear-gradient(135deg, #7135ff, #4b17d5);
-  border: none;
-  border-radius: 8px;
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
+
+function readFileAsDataURL(file) {
+
+  return new Promise((resolve, reject) => {
+
+    if (!file) {
+      resolve("");
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      resolve(reader.result);
+    };
+
+    reader.onerror = () => {
+      reject(
+        new Error("Erro ao ler a imagem.")
+      );
+    };
+
+    reader.readAsDataURL(file);
+
+  });
+
 }
 
-.image-preview img {
-  display: block;
-  width: 100%;
-  max-height: 230px;
-  min-height: 80px;
-  object-fit: contain;
-  border-radius: 9px;
-  background: #08070d;
+
+/* =========================================================
+   IDENTIFICADOR AUTOMÁTICO
+   ========================================================= */
+
+function normalizeId(value) {
+
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
 }
 
-.editor-item-image {
-  width: 58px;
-  height: 58px;
-  flex-shrink: 0;
-  object-fit: cover;
-  border-radius: 9px;
-  background: #08070d;
-  border: 1px solid #33264c;
-}
 
-@media (max-width: 650px) {
-  input[type="file"] {
-    font-size: 11px;
+function generateCategoryId(name, currentId = "") {
+
+  let baseId = normalizeId(name);
+
+  if (!baseId) {
+    baseId = "categoria";
   }
 
-  .image-preview img {
-    max-height: 180px;
+  let id = baseId;
+  let number = 2;
+
+
+  while (
+    categories.some(category =>
+      String(category.id) === String(id) &&
+      String(category.id) !== String(currentId)
+    )
+  ) {
+
+    id = `${baseId}-${number}`;
+
+    number++;
+
   }
+
+
+  return id;
+
+}
+
+
+/* =========================================================
+   SEGURANÇA HTML
+   ========================================================= */
+
+function escapeHTML(value) {
+
+  return String(value ?? "")
+    .replace(/[&<>"']/g, char => ({
+
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
+
+    }[char]));
+
+}
+
+
+function escapeAttribute(value) {
+  return escapeHTML(value);
+}
+
+
+/* =========================================================
+   DADOS
+   ========================================================= */
+
+let products = load(
+  PRODUCTS_KEY,
+  defaultProducts
+);
+
+
+let categories = load(
+  CATEGORIES_KEY,
+  defaultCategories
+);
+
+
+let config = {
+  ...defaultConfig,
+  ...load(
+    CONFIG_KEY,
+    defaultConfig
+  )
+};
+
+
+/* =========================================================
+   INICIALIZAÇÃO
+   ========================================================= */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
+
+    setupNavigation();
+
+    setupOverview();
+
+    setupStoreForm();
+
+    setupCategoryForm();
+
+    setupProductForm();
+
+    setupSupportForm();
+
+    renderAll();
+
+  }
+);
+
+
+/* =========================================================
+   NAVEGAÇÃO
+   ========================================================= */
+
+function setupNavigation() {
+
+  document
+    .querySelectorAll(".nav-button")
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          showSection(
+            button.dataset.section
+          );
+
+        }
+      );
+
+    });
+
+
+  document
+    .querySelectorAll("[data-go-section]")
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          showSection(
+            button.dataset.goSection
+          );
+
+        }
+      );
+
+    });
+
+}
+
+
+function showSection(section) {
+
+  document
+    .querySelectorAll(".nav-button")
+    .forEach(button => {
+
+      button.classList.toggle(
+        "active",
+        button.dataset.section === section
+      );
+
+    });
+
+
+  document
+    .querySelectorAll(".dashboard-section")
+    .forEach(item => {
+
+      item.classList.toggle(
+        "active",
+        item.id === `section-${section}`
+      );
+
+    });
+
+
+  const titles = {
+
+    overview: "Visão geral",
+    store: "Loja",
+    categories: "Categorias",
+    products: "Produtos",
+    support: "Suporte"
+
+  };
+
+
+  const pageTitle = $("pageTitle");
+
+  if (pageTitle) {
+
+    pageTitle.textContent =
+      titles[section] || "Dashboard";
+
+  }
+
+}
+
+
+/* =========================================================
+   VISÃO GERAL
+   ========================================================= */
+
+function setupOverview() {
+
+  const saveButton =
+    $("saveAllButton");
+
+  if (!saveButton) return;
+
+
+  saveButton.addEventListener(
+    "click",
+    () => {
+
+      saveEverything();
+
+      showToast(
+        "Todas as alterações foram salvas."
+      );
+
+    }
+  );
+
+}
+
+
+function updateOverview() {
+
+  const categoriesElement =
+    $("overviewCategories");
+
+  const productsElement =
+    $("overviewProducts");
+
+  const activeProductsElement =
+    $("overviewActiveProducts");
+
+
+  if (categoriesElement) {
+    categoriesElement.textContent =
+      categories.length;
+  }
+
+
+  if (productsElement) {
+    productsElement.textContent =
+      products.length;
+  }
+
+
+  if (activeProductsElement) {
+
+    activeProductsElement.textContent =
+      products.filter(
+        product =>
+          product.status !== "inactive"
+      ).length;
+
+  }
+
+}
+
+
+/* =========================================================
+   LOJA
+   ========================================================= */
+
+function setupStoreForm() {
+
+  const heroInput =
+    $("heroImage");
+
+
+  if (heroInput) {
+
+    heroInput.addEventListener(
+      "change",
+      async event => {
+
+        const file =
+          event.target.files[0];
+
+        if (!file) return;
+
+
+        try {
+
+          const image =
+            await readFileAsDataURL(file);
+
+
+          $("heroPreview").src =
+            image;
+
+
+          $("heroPreview").style.display =
+            "block";
+
+        } catch (error) {
+
+          console.error(error);
+
+          showToast(
+            "Não foi possível carregar o banner."
+          );
+
+        }
+
+      }
+    );
+
+  }
+
+
+  const storeForm =
+    $("storeForm");
+
+  if (!storeForm) return;
+
+
+  storeForm.addEventListener(
+    "submit",
+    async event => {
+
+      event.preventDefault();
+
+
+      try {
+
+        const file =
+          $("heroImage").files[0];
+
+
+        if (file) {
+
+          config.heroImage =
+            await readFileAsDataURL(file);
+
+        }
+
+
+        config.storeName =
+          $("storeName")
+            .value
+            .trim();
+
+
+        config.storeDescription =
+          $("storeDescription")
+            .value
+            .trim();
+
+
+        save(
+          CONFIG_KEY,
+          config
+        );
+
+
+        showToast(
+          "Dados da loja salvos."
+        );
+
+      } catch (error) {
+
+        console.error(error);
+
+        showToast(
+          "Erro ao salvar os dados da loja."
+        );
+
+      }
+
+    }
+  );
+
+}
+
+
+function loadStoreForm() {
+
+  if (!$("storeName")) return;
+
+
+  $("storeName").value =
+    config.storeName || "";
+
+
+  $("storeDescription").value =
+    config.storeDescription || "";
+
+
+  $("heroPreview").src =
+    config.heroImage || "";
+
+
+  $("heroPreview").style.display =
+    config.heroImage
+      ? "block"
+      : "none";
+
+}
+
+
+/* =========================================================
+   CATEGORIAS
+   ========================================================= */
+
+function setupCategoryForm() {
+
+  const newButton =
+    $("newCategoryButton");
+
+
+  if (newButton) {
+
+    newButton.addEventListener(
+      "click",
+      () => {
+
+        openCategoryForm();
+
+      }
+    );
+
+  }
+
+
+  const cancelButton =
+    $("cancelCategoryButton");
+
+
+  if (cancelButton) {
+
+    cancelButton.addEventListener(
+      "click",
+      closeCategoryForm
+    );
+
+  }
+
+
+  const cancelBottom =
+    $("cancelCategoryButtonBottom");
+
+
+  if (cancelBottom) {
+
+    cancelBottom.addEventListener(
+      "click",
+      closeCategoryForm
+    );
+
+  }
+
+
+  const imageInput =
+    $("categoryImage");
+
+
+  if (imageInput) {
+
+    imageInput.addEventListener(
+      "change",
+      async event => {
+
+        const file =
+          event.target.files[0];
+
+        if (!file) return;
+
+
+        try {
+
+          const image =
+            await readFileAsDataURL(file);
+
+
+          $("categoryPreview").src =
+            image;
+
+
+          $("categoryPreview").style.display =
+            "block";
+
+        } catch (error) {
+
+          console.error(error);
+
+          showToast(
+            "Não foi possível carregar a imagem."
+          );
+
+        }
+
+      }
+    );
+
+  }
+
+
+  const categoryForm =
+    $("categoryForm");
+
+
+  if (!categoryForm) return;
+
+
+  categoryForm.addEventListener(
+    "submit",
+    async event => {
+
+      event.preventDefault();
+
+
+      try {
+
+        const name =
+          $("categoryName")
+            .value
+            .trim();
+
+
+        const oldId =
+          $("categoryId")
+            .value
+            .trim();
+
+
+        const file =
+          $("categoryImage")
+            .files[0];
+
+
+        /* ============================================
+           SOMENTE O NOME É NECESSÁRIO
+           ============================================ */
+
+        if (!name) {
+
+          showToast(
+            "Digite o nome da categoria."
+          );
+
+          $("categoryName").focus();
+
+          return;
+
+        }
+
+
+        /* ============================================
+           CRIA ID AUTOMATICAMENTE
+           ============================================ */
+
+        let id;
+
+
+        if (oldId) {
+
+          /*
+           * Estamos editando.
+           * Mantém o ID antigo.
+           */
+
+          id = oldId;
+
+        } else {
+
+          /*
+           * Estamos criando.
+           * Gera automaticamente.
+           */
+
+          id =
+            generateCategoryId(
+              name
+            );
+
+        }
+
+
+        /* ============================================
+           IMAGEM
+           ============================================ */
+
+        let image = "";
+
+
+        if (file) {
+
+          image =
+            await readFileAsDataURL(file);
+
+        } else if (oldId) {
+
+          const oldCategory =
+            categories.find(
+              category =>
+                String(category.id) ===
+                String(oldId)
+            );
+
+
+          if (oldCategory) {
+
+            image =
+              oldCategory.image || "";
+
+          }
+
+        }
+
+
+        /* ============================================
+           OBJETO DA CATEGORIA
+           ============================================ */
+
+        const category = {
+
+          id: id,
+
+          name: name,
+
+          image: image
+
+        };
+
+
+        /* ============================================
+           PROCURAR CATEGORIA EXISTENTE
+           ============================================ */
+
+        const existingIndex =
+          categories.findIndex(
+            item =>
+              String(item.id) ===
+              String(oldId)
+          );
+
+
+        /* ============================================
+           EDITAR
+           ============================================ */
+
+        if (
+          oldId &&
+          existingIndex >= 0
+        ) {
+
+          categories[existingIndex] =
+            category;
+
+        }
+
+
+        /* ============================================
+           CRIAR
+           ============================================ */
+
+        else {
+
+          categories.push(
+            category
+          );
+
+        }
+
+
+        /* ============================================
+           SALVAR
+           ============================================ */
+
+        const saved =
+          save(
+            CATEGORIES_KEY,
+            categories
+          );
+
+
+        if (!saved) {
+          return;
+        }
+
+
+        /* ============================================
+           ATUALIZAR PRODUTOS SE NECESSÁRIO
+           ============================================ */
+
+        if (
+          oldId &&
+          oldId !== id
+        ) {
+
+          products.forEach(
+            product => {
+
+              if (
+                String(product.category) ===
+                String(oldId)
+              ) {
+
+                product.category =
+                  id;
+
+              }
+
+            }
+          );
+
+
+          save(
+            PRODUCTS_KEY,
+            products
+          );
+
+        }
+
+
+        /* ============================================
+           ATUALIZA TELA
+           ============================================ */
+
+        renderAll();
+
+
+        closeCategoryForm();
+
+
+        showToast(
+          oldId
+            ? "Categoria atualizada com sucesso."
+            : "Categoria criada com sucesso."
+        );
+
+
+        console.log(
+          "Categoria salva:",
+          category
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "ERRO AO CRIAR CATEGORIA:",
+          error
+        );
+
+
+        showToast(
+          "Erro ao criar a categoria. Veja o console."
+        );
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   ABRIR FORMULÁRIO DE CATEGORIA
+   ========================================================= */
+
+function openCategoryForm(category = null) {
+
+  const formCard =
+    $("categoryFormCard");
+
+
+  const form =
+    $("categoryForm");
+
+
+  if (!formCard || !form) return;
+
+
+  formCard.hidden =
+    false;
+
+
+  form.reset();
+
+
+  if (category) {
+
+    $("categoryFormTitle")
+      .textContent =
+      "Editar categoria";
+
+
+    $("categoryId").value =
+      category.id;
+
+
+    $("categoryName").value =
+      category.name || "";
+
+
+    $("categoryPreview").src =
+      category.image || "";
+
+
+    $("categoryPreview").style.display =
+      category.image
+        ? "block"
+        : "none";
+
+  } else {
+
+    $("categoryFormTitle")
+      .textContent =
+      "Nova categoria";
+
+
+    $("categoryId").value =
+      "";
+
+
+    $("categoryPreview")
+      .removeAttribute("src");
+
+
+    $("categoryPreview").style.display =
+      "none";
+
+  }
+
+
+  formCard.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+
+
+  setTimeout(
+    () => {
+
+      $("categoryName").focus();
+
+    },
+    300
+  );
+
+}
+
+
+/* =========================================================
+   FECHAR FORMULÁRIO DE CATEGORIA
+   ========================================================= */
+
+function closeCategoryForm() {
+
+  const formCard =
+    $("categoryFormCard");
+
+
+  const form =
+    $("categoryForm");
+
+
+  if (!formCard) return;
+
+
+  formCard.hidden =
+    true;
+
+
+  if (form) {
+    form.reset();
+  }
+
+
+  $("categoryId").value =
+    "";
+
+
+  $("categoryPreview")
+    .removeAttribute("src");
+
+
+  $("categoryPreview").style.display =
+    "none";
+
+}
+
+
+/* =========================================================
+   RENDERIZAR CATEGORIAS
+   ========================================================= */
+
+function renderCategories() {
+
+  const container =
+    $("categoriesEditor");
+
+
+  if (!container) return;
+
+
+  container.innerHTML =
+    "";
+
+
+  if (!categories.length) {
+
+    container.innerHTML = `
+      <div class="empty-editor">
+        Nenhuma categoria cadastrada.
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  categories.forEach(
+    category => {
+
+      const item =
+        document.createElement(
+          "div"
+        );
+
+
+      item.className =
+        "editor-item";
+
+
+      item.innerHTML = `
+
+        <div class="editor-item-main">
+
+          ${
+            category.image
+
+              ? `
+                <img
+                  class="editor-item-image"
+                  src="${escapeAttribute(category.image)}"
+                  alt="${escapeAttribute(category.name)}"
+                >
+              `
+
+              : `
+                <div class="editor-item-image"></div>
+              `
+          }
+
+
+          <div>
+
+            <h3>
+              ${escapeHTML(category.name)}
+            </h3>
+
+            <p>
+              Identificador interno:
+              ${escapeHTML(category.id)}
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="editor-actions">
+
+          <button
+            type="button"
+            data-action="edit"
+          >
+            Editar
+          </button>
+
+
+          <button
+            type="button"
+            class="delete-button"
+            data-action="delete"
+          >
+            Remover
+          </button>
+
+        </div>
+
+      `;
+
+
+      const editButton =
+        item.querySelector(
+          '[data-action="edit"]'
+        );
+
+
+      const deleteButton =
+        item.querySelector(
+          '[data-action="delete"]'
+        );
+
+
+      editButton.addEventListener(
+        "click",
+        () => {
+
+          openCategoryForm(
+            category
+          );
+
+        }
+      );
+
+
+      deleteButton.addEventListener(
+        "click",
+        () => {
+
+          removeCategory(
+            category.id
+          );
+
+        }
+      );
+
+
+      container.appendChild(
+        item
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   REMOVER CATEGORIA
+   ========================================================= */
+
+function removeCategory(id) {
+
+  const hasProducts =
+    products.some(
+      product =>
+        String(product.category) ===
+        String(id)
+    );
+
+
+  if (hasProducts) {
+
+    showToast(
+      "Remova ou altere os produtos dessa categoria primeiro."
+    );
+
+    return;
+
+  }
+
+
+  const confirmed =
+    confirm(
+      "Deseja remover esta categoria?"
+    );
+
+
+  if (!confirmed) {
+    return;
+  }
+
+
+  categories =
+    categories.filter(
+      category =>
+        String(category.id) !==
+        String(id)
+    );
+
+
+  save(
+    CATEGORIES_KEY,
+    categories
+  );
+
+
+  renderAll();
+
+
+  showToast(
+    "Categoria removida."
+  );
+
+}
+
+
+/* =========================================================
+   PRODUTOS
+   ========================================================= */
+
+function setupProductForm() {
+
+  const newButton =
+    $("newProductButton");
+
+
+  if (newButton) {
+
+    newButton.addEventListener(
+      "click",
+      () => {
+
+        openProductForm();
+
+      }
+    );
+
+  }
+
+
+  const cancelButton =
+    $("cancelProductButton");
+
+
+  if (cancelButton) {
+
+    cancelButton.addEventListener(
+      "click",
+      closeProductForm
+    );
+
+  }
+
+
+  const cancelBottom =
+    $("cancelProductButtonBottom");
+
+
+  if (cancelBottom) {
+
+    cancelBottom.addEventListener(
+      "click",
+      closeProductForm
+    );
+
+  }
+
+
+  const imageInput =
+    $("productImage");
+
+
+  if (imageInput) {
+
+    imageInput.addEventListener(
+      "change",
+      async event => {
+
+        const file =
+          event.target.files[0];
+
+        if (!file) return;
+
+
+        try {
+
+          const image =
+            await readFileAsDataURL(file);
+
+
+          $("productPreview").src =
+            image;
+
+
+          $("productPreview").style.display =
+            "block";
+
+        } catch (error) {
+
+          console.error(error);
+
+          showToast(
+            "Não foi possível carregar a imagem."
+          );
+
+        }
+
+      }
+    );
+
+  }
+
+
+  const productForm =
+    $("productForm");
+
+
+  if (!productForm) return;
+
+
+  productForm.addEventListener(
+    "submit",
+    async event => {
+
+      event.preventDefault();
+
+
+      try {
+
+        const name =
+          $("productName")
+            .value
+            .trim();
+
+
+        const category =
+          $("productCategory")
+            .value;
+
+
+        const idValue =
+          $("productId")
+            .value;
+
+
+        const mainImageFile =
+          $("productImage")
+            .files[0];
+
+
+        const additionalFiles =
+          Array.from(
+            $("productImages")
+              .files
+          );
+
+
+        if (!name || !category) {
+
+          showToast(
+            "Preencha o nome e a categoria."
+          );
+
+          return;
+
+        }
+
+
+        const existingProduct =
+          products.find(
+            product =>
+              Number(product.id) ===
+              Number(idValue)
+          );
+
+
+        let image =
+          existingProduct?.image ||
+          "";
+
+
+        if (mainImageFile) {
+
+          image =
+            await readFileAsDataURL(
+              mainImageFile
+            );
+
+        }
+
+
+        let images =
+          existingProduct?.images ||
+          [];
+
+
+        if (additionalFiles.length) {
+
+          images =
+            await Promise.all(
+              additionalFiles.map(
+                file =>
+                  readFileAsDataURL(
+                    file
+                  )
+              )
+            );
+
+        }
+
+
+        const product = {
+
+          id: idValue
+            ? Number(idValue)
+            : getNextProductId(),
+
+          name,
+
+          category,
+
+          price:
+            Number(
+              $("productPrice")
+                .value || 0
+            ),
+
+          oldPrice:
+            Number(
+              $("productOldPrice")
+                .value || 0
+            ),
+
+          rating:
+            $("productRating")
+              .value
+              .trim() || "5.0",
+
+          status:
+            $("productStatus")
+              .value,
+
+          image,
+
+          images,
+
+          purchaseLink:
+            $("productPurchaseLink")
+              .value
+              .trim() || "#",
+
+          descriptionTitle:
+            $("productDescriptionTitle")
+              .value
+              .trim(),
+
+          description:
+            $("productDescription")
+              .value
+              .trim()
+
+        };
+
+
+        const index =
+          products.findIndex(
+            item =>
+              Number(item.id) ===
+              Number(product.id)
+          );
+
+
+        if (index >= 0) {
+
+          products[index] =
+            product;
+
+        } else {
+
+          products.push(
+            product
+          );
+
+        }
+
+
+        save(
+          PRODUCTS_KEY,
+          products
+        );
+
+
+        renderAll();
+
+
+        closeProductForm();
+
+
+        showToast(
+          "Produto salvo."
+        );
+
+      } catch (error) {
+
+        console.error(
+          "Erro ao salvar produto:",
+          error
+        );
+
+        showToast(
+          "Erro ao salvar produto."
+        );
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   ABRIR PRODUTO
+   ========================================================= */
+
+function openProductForm(product = null) {
+
+  const card =
+    $("productFormCard");
+
+
+  const form =
+    $("productForm");
+
+
+  if (!card || !form) return;
+
+
+  card.hidden =
+    false;
+
+
+  fillCategorySelect();
+
+
+  form.reset();
+
+
+  if (product) {
+
+    $("productFormTitle")
+      .textContent =
+      "Editar produto";
+
+
+    $("productId").value =
+      product.id;
+
+
+    $("productName").value =
+      product.name || "";
+
+
+    $("productCategory").value =
+      product.category || "";
+
+
+    $("productPrice").value =
+      product.price || 0;
+
+
+    $("productOldPrice").value =
+      product.oldPrice || 0;
+
+
+    $("productRating").value =
+      product.rating || "5.0";
+
+
+    $("productStatus").value =
+      product.status || "active";
+
+
+    $("productPurchaseLink").value =
+      product.purchaseLink || "";
+
+
+    $("productDescriptionTitle").value =
+      product.descriptionTitle || "";
+
+
+    $("productDescription").value =
+      product.description || "";
+
+
+    $("productPreview").src =
+      product.image || "";
+
+
+    $("productPreview").style.display =
+      product.image
+        ? "block"
+        : "none";
+
+  } else {
+
+    $("productFormTitle")
+      .textContent =
+      "Novo produto";
+
+
+    $("productId").value =
+      "";
+
+
+    $("productStatus").value =
+      "active";
+
+
+    $("productRating").value =
+      "5.0";
+
+
+    $("productPreview")
+      .removeAttribute("src");
+
+
+    $("productPreview").style.display =
+      "none";
+
+  }
+
+
+  card.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+
+}
+
+
+/* =========================================================
+   FECHAR PRODUTO
+   ========================================================= */
+
+function closeProductForm() {
+
+  const card =
+    $("productFormCard");
+
+
+  const form =
+    $("productForm");
+
+
+  if (!card) return;
+
+
+  card.hidden =
+    true;
+
+
+  if (form) {
+    form.reset();
+  }
+
+
+  $("productId").value =
+    "";
+
+
+  $("productPreview")
+    .removeAttribute("src");
+
+
+  $("productPreview").style.display =
+    "none";
+
+}
+
+
+/* =========================================================
+   SELECT DE CATEGORIAS
+   ========================================================= */
+
+function fillCategorySelect() {
+
+  const select =
+    $("productCategory");
+
+
+  if (!select) return;
+
+
+  select.innerHTML =
+    "";
+
+
+  if (!categories.length) {
+
+    const option =
+      document.createElement(
+        "option"
+      );
+
+
+    option.value =
+      "";
+
+
+    option.textContent =
+      "Nenhuma categoria cadastrada";
+
+
+    select.appendChild(
+      option
+    );
+
+
+    return;
+
+  }
+
+
+  categories.forEach(
+    category => {
+
+      const option =
+        document.createElement(
+          "option"
+        );
+
+
+      option.value =
+        category.id;
+
+
+      option.textContent =
+        category.name;
+
+
+      select.appendChild(
+        option
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   RENDERIZAR PRODUTOS
+   ========================================================= */
+
+function renderProducts() {
+
+  const container =
+    $("productsEditor");
+
+
+  if (!container) return;
+
+
+  container.innerHTML =
+    "";
+
+
+  if (!products.length) {
+
+    container.innerHTML = `
+      <div class="empty-editor">
+        Nenhum produto cadastrado.
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  products.forEach(
+    product => {
+
+      const category =
+        categories.find(
+          item =>
+            String(item.id) ===
+            String(product.category)
+        );
+
+
+      const item =
+        document.createElement(
+          "div"
+        );
+
+
+      item.className =
+        "editor-item";
+
+
+      item.innerHTML = `
+
+        <div class="editor-item-main">
+
+          ${
+            product.image
+
+              ? `
+                <img
+                  class="editor-item-image"
+                  src="${escapeAttribute(product.image)}"
+                  alt="${escapeAttribute(product.name)}"
+                >
+              `
+
+              : `
+                <div class="editor-item-image"></div>
+              `
+          }
+
+
+          <div>
+
+            <h3>
+              ${escapeHTML(product.name)}
+            </h3>
+
+
+            <p>
+
+              ${escapeHTML(
+                category
+                  ? category.name
+                  : product.category
+              )}
+
+              · R$
+
+              ${Number(
+                product.price || 0
+              )
+                .toFixed(2)
+                .replace(".", ",")}
+
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="editor-actions">
+
+          <button
+            type="button"
+            data-action="edit"
+          >
+            Editar
+          </button>
+
+
+          <button
+            type="button"
+            class="delete-button"
+            data-action="delete"
+          >
+            Remover
+          </button>
+
+        </div>
+
+      `;
+
+
+      item
+        .querySelector(
+          '[data-action="edit"]'
+        )
+        .addEventListener(
+          "click",
+          () => {
+
+            openProductForm(
+              product
+            );
+
+          }
+        );
+
+
+      item
+        .querySelector(
+          '[data-action="delete"]'
+        )
+        .addEventListener(
+          "click",
+          () => {
+
+            removeProduct(
+              product.id
+            );
+
+          }
+        );
+
+
+      container.appendChild(
+        item
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   REMOVER PRODUTO
+   ========================================================= */
+
+function removeProduct(id) {
+
+  if (
+    !confirm(
+      "Deseja remover este produto?"
+    )
+  ) {
+
+    return;
+
+  }
+
+
+  products =
+    products.filter(
+      product =>
+        product.id !== id
+    );
+
+
+  save(
+    PRODUCTS_KEY,
+    products
+  );
+
+
+  renderAll();
+
+
+  showToast(
+    "Produto removido."
+  );
+
+}
+
+
+/* =========================================================
+   PRÓXIMO ID
+   ========================================================= */
+
+function getNextProductId() {
+
+  return products.reduce(
+    (max, product) => {
+
+      return Math.max(
+        max,
+        Number(product.id) || 0
+      );
+
+    },
+    0
+  ) + 1;
+
+}
+
+
+/* =========================================================
+   SUPORTE
+   ========================================================= */
+
+function setupSupportForm() {
+
+  const form =
+    $("supportForm");
+
+
+  if (!form) return;
+
+
+  form.addEventListener(
+    "submit",
+    event => {
+
+      event.preventDefault();
+
+
+      config.discord =
+        $("discord")
+          .value
+          .trim();
+
+
+      config.whatsapp =
+        $("whatsapp")
+          .value
+          .trim();
+
+
+      config.tiktok =
+        $("tiktok")
+          .value
+          .trim();
+
+
+      config.instagram =
+        $("instagram")
+          .value
+          .trim();
+
+
+      save(
+        CONFIG_KEY,
+        config
+      );
+
+
+      showToast(
+        "Links de suporte salvos."
+      );
+
+    }
+  );
+
+}
+
+
+function loadSupportForm() {
+
+  if (!$("discord")) return;
+
+
+  $("discord").value =
+    config.discord || "";
+
+
+  $("whatsapp").value =
+    config.whatsapp || "";
+
+
+  $("tiktok").value =
+    config.tiktok || "";
+
+
+  $("instagram").value =
+    config.instagram || "";
+
+}
+
+
+/* =========================================================
+   SALVAR TUDO
+   ========================================================= */
+
+function saveEverything() {
+
+  save(
+    PRODUCTS_KEY,
+    products
+  );
+
+
+  save(
+    CATEGORIES_KEY,
+    categories
+  );
+
+
+  save(
+    CONFIG_KEY,
+    config
+  );
+
+}
+
+
+/* =========================================================
+   RENDERIZAR TUDO
+   ========================================================= */
+
+function renderAll() {
+
+  updateOverview();
+
+  loadStoreForm();
+
+  loadSupportForm();
+
+  renderCategories();
+
+  renderProducts();
+
+  fillCategorySelect();
+
+}
+
+
+/* =========================================================
+   TOAST
+   ========================================================= */
+
+function showToast(message) {
+
+  const toast =
+    $("toast");
+
+
+  if (!toast) {
+
+    console.log(message);
+
+    return;
+
+  }
+
+
+  toast.textContent =
+    message;
+
+
+  toast.classList.add(
+    "show"
+  );
+
+
+  clearTimeout(
+    showToast.timer
+  );
+
+
+  showToast.timer =
+    setTimeout(
+      () => {
+
+        toast.classList.remove(
+          "show"
+        );
+
+      },
+      2600
+    );
+
 }
