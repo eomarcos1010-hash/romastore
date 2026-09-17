@@ -1,7 +1,12 @@
+```js
 const PRODUCTS_KEY = "roma_store_products";
 const CATEGORIES_KEY = "roma_store_categories";
 const CONFIG_KEY = "roma_store_config";
 
+
+/* =========================================================
+   DADOS PADRÃO
+   ========================================================= */
 
 const defaultProducts = [
   {
@@ -56,18 +61,24 @@ const defaultConfig = {
 };
 
 
+/* =========================================================
+   UTILITÁRIOS
+   ========================================================= */
+
 const $ = id => document.getElementById(id);
 
 
 function clone(value) {
-  return JSON.parse(JSON.stringify(value));
+  try {
+    return JSON.parse(JSON.stringify(value));
+  } catch {
+    return value;
+  }
 }
 
 
 function load(key, fallback) {
-
   try {
-
     const saved = localStorage.getItem(key);
 
     if (!saved) {
@@ -79,45 +90,70 @@ function load(key, fallback) {
     return parsed;
 
   } catch (error) {
-
-    console.error(
-      `Erro ao carregar ${key}:`,
-      error
-    );
+    console.error(`Erro ao carregar ${key}:`, error);
 
     return clone(fallback);
   }
 }
 
 
+/* =========================================================
+   SALVAMENTO SEGURO
+   ========================================================= */
+
 function save(key, value) {
-
   try {
+    const data = JSON.stringify(value);
 
-    localStorage.setItem(
-      key,
-      JSON.stringify(value)
-    );
+    localStorage.setItem(key, data);
 
     return true;
 
   } catch (error) {
 
-    console.error(
-      `Erro ao salvar ${key}:`,
-      error
-    );
+    console.error(`Erro ao salvar ${key}:`, error);
 
-    showToast(
-      "Não foi possível salvar os dados."
-    );
+    const message =
+      String(error?.message || "").toLowerCase();
+
+    if (
+      error?.name === "QuotaExceededError" ||
+      error?.code === 22 ||
+      message.includes("quota") ||
+      message.includes("storage")
+    ) {
+
+      showToast(
+        "Armazenamento cheio. Tente remover imagens antigas."
+      );
+
+    } else {
+
+      showToast(
+        "Não foi possível salvar os dados."
+      );
+
+    }
 
     return false;
   }
 }
 
 
-function readFileAsDataURL(file) {
+/* =========================================================
+   IMAGEM
+   ========================================================= */
+
+/*
+ * Converte imagem para Base64.
+ *
+ * A imagem é redimensionada e comprimida antes
+ * de ser armazenada no localStorage.
+ *
+ * Isso evita ocupar espaço desnecessário.
+ */
+
+function readFileAsDataURL(file, maxWidth = 1200, quality = 0.75) {
 
   return new Promise((resolve, reject) => {
 
@@ -126,17 +162,110 @@ function readFileAsDataURL(file) {
       return;
     }
 
+
+    if (!file.type.startsWith("image/")) {
+      reject(
+        new Error("O arquivo selecionado não é uma imagem.")
+      );
+      return;
+    }
+
+
     const reader = new FileReader();
 
-    reader.onload = () => {
-      resolve(reader.result);
+
+    reader.onload = event => {
+
+      const image = new Image();
+
+
+      image.onload = () => {
+
+        try {
+
+          let width = image.width;
+          let height = image.height;
+
+
+          if (width > maxWidth) {
+
+            const ratio =
+              maxWidth / width;
+
+            width =
+              Math.round(width * ratio);
+
+            height =
+              Math.round(height * ratio);
+
+          }
+
+
+          const canvas =
+            document.createElement("canvas");
+
+
+          canvas.width =
+            width;
+
+          canvas.height =
+            height;
+
+
+          const context =
+            canvas.getContext("2d");
+
+
+          context.drawImage(
+            image,
+            0,
+            0,
+            width,
+            height
+          );
+
+
+          const compressed =
+            canvas.toDataURL(
+              "image/jpeg",
+              quality
+            );
+
+
+          resolve(compressed);
+
+        } catch (error) {
+
+          reject(error);
+
+        }
+
+      };
+
+
+      image.onerror = () => {
+
+        reject(
+          new Error("Não foi possível processar a imagem.")
+        );
+
+      };
+
+
+      image.src =
+        event.target.result;
+
     };
 
+
     reader.onerror = () => {
+
       reject(
         new Error("Erro ao ler a imagem.")
       );
+
     };
+
 
     reader.readAsDataURL(file);
 
@@ -146,7 +275,7 @@ function readFileAsDataURL(file) {
 
 
 /* =========================================================
-   IDENTIFICADOR AUTOMÁTICO
+   IDENTIFICADOR
    ========================================================= */
 
 function normalizeId(value) {
@@ -163,14 +292,21 @@ function normalizeId(value) {
 
 function generateCategoryId(name, currentId = "") {
 
-  let baseId = normalizeId(name);
+  let baseId =
+    normalizeId(name);
+
 
   if (!baseId) {
     baseId = "categoria";
   }
 
-  let id = baseId;
-  let number = 2;
+
+  let id =
+    baseId;
+
+
+  let number =
+    2;
 
 
   while (
@@ -180,7 +316,8 @@ function generateCategoryId(name, currentId = "") {
     )
   ) {
 
-    id = `${baseId}-${number}`;
+    id =
+      `${baseId}-${number}`;
 
     number++;
 
@@ -200,13 +337,11 @@ function escapeHTML(value) {
 
   return String(value ?? "")
     .replace(/[&<>"']/g, char => ({
-
       "&": "&amp;",
       "<": "&lt;",
       ">": "&gt;",
       '"': "&quot;",
       "'": "&#039;"
-
     }[char]));
 
 }
@@ -221,16 +356,18 @@ function escapeAttribute(value) {
    DADOS
    ========================================================= */
 
-let products = load(
-  PRODUCTS_KEY,
-  defaultProducts
-);
+let products =
+  load(
+    PRODUCTS_KEY,
+    defaultProducts
+  );
 
 
-let categories = load(
-  CATEGORIES_KEY,
-  defaultCategories
-);
+let categories =
+  load(
+    CATEGORIES_KEY,
+    defaultCategories
+  );
 
 
 let config = {
@@ -240,6 +377,112 @@ let config = {
     defaultConfig
   )
 };
+
+
+/* =========================================================
+   CORREÇÃO DE DADOS ANTIGOS
+   ========================================================= */
+
+if (!Array.isArray(products)) {
+  products = clone(defaultProducts);
+}
+
+
+if (!Array.isArray(categories)) {
+  categories = clone(defaultCategories);
+}
+
+
+function normalizeExistingCategories() {
+
+  const usedIds = new Set();
+
+
+  categories =
+    categories.map(
+      category => {
+
+        let name =
+          String(
+            category?.name || "Categoria"
+          ).trim();
+
+
+        let id =
+          normalizeId(
+            category?.id || ""
+          );
+
+
+        if (!id) {
+
+          id =
+            generateUniqueIdForSet(
+              name,
+              usedIds
+            );
+
+        }
+
+
+        if (usedIds.has(id)) {
+
+          id =
+            generateUniqueIdForSet(
+              name,
+              usedIds
+            );
+
+        }
+
+
+        usedIds.add(id);
+
+
+        return {
+          id,
+          name,
+          image:
+            category?.image || ""
+        };
+
+      }
+    );
+
+}
+
+
+function generateUniqueIdForSet(name, usedIds) {
+
+  let base =
+    normalizeId(name) ||
+    "categoria";
+
+
+  let id =
+    base;
+
+
+  let number =
+    2;
+
+
+  while (usedIds.has(id)) {
+
+    id =
+      `${base}-${number}`;
+
+    number++;
+
+  }
+
+
+  return id;
+
+}
+
+
+normalizeExistingCategories();
 
 
 /* =========================================================
@@ -349,7 +592,9 @@ function showSection(section) {
   };
 
 
-  const pageTitle = $("pageTitle");
+  const pageTitle =
+    $("pageTitle");
+
 
   if (pageTitle) {
 
@@ -370,6 +615,7 @@ function setupOverview() {
   const saveButton =
     $("saveAllButton");
 
+
   if (!saveButton) return;
 
 
@@ -377,11 +623,17 @@ function setupOverview() {
     "click",
     () => {
 
-      saveEverything();
+      const result =
+        saveEverything();
 
-      showToast(
-        "Todas as alterações foram salvas."
-      );
+
+      if (result) {
+
+        showToast(
+          "Todas as alterações foram salvas."
+        );
+
+      }
 
     }
   );
@@ -394,22 +646,28 @@ function updateOverview() {
   const categoriesElement =
     $("overviewCategories");
 
+
   const productsElement =
     $("overviewProducts");
+
 
   const activeProductsElement =
     $("overviewActiveProducts");
 
 
   if (categoriesElement) {
+
     categoriesElement.textContent =
       categories.length;
+
   }
 
 
   if (productsElement) {
+
     productsElement.textContent =
       products.length;
+
   }
 
 
@@ -445,21 +703,33 @@ function setupStoreForm() {
         const file =
           event.target.files[0];
 
+
         if (!file) return;
 
 
         try {
 
           const image =
-            await readFileAsDataURL(file);
+            await readFileAsDataURL(
+              file,
+              1600,
+              0.75
+            );
 
 
-          $("heroPreview").src =
-            image;
+          const preview =
+            $("heroPreview");
 
 
-          $("heroPreview").style.display =
-            "block";
+          if (preview) {
+
+            preview.src =
+              image;
+
+            preview.style.display =
+              "block";
+
+          }
 
         } catch (error) {
 
@@ -480,6 +750,7 @@ function setupStoreForm() {
   const storeForm =
     $("storeForm");
 
+
   if (!storeForm) return;
 
 
@@ -492,39 +763,52 @@ function setupStoreForm() {
 
       try {
 
+        const heroInput =
+          $("heroImage");
+
+
         const file =
-          $("heroImage").files[0];
+          heroInput?.files?.[0];
 
 
         if (file) {
 
           config.heroImage =
-            await readFileAsDataURL(file);
+            await readFileAsDataURL(
+              file,
+              1600,
+              0.75
+            );
 
         }
 
 
         config.storeName =
           $("storeName")
-            .value
-            .trim();
+            ?.value
+            ?.trim() || "";
 
 
         config.storeDescription =
           $("storeDescription")
-            .value
-            .trim();
+            ?.value
+            ?.trim() || "";
 
 
-        save(
-          CONFIG_KEY,
-          config
-        );
+        const saved =
+          save(
+            CONFIG_KEY,
+            config
+          );
+
+
+        if (!saved) return;
 
 
         showToast(
           "Dados da loja salvos."
         );
+
 
       } catch (error) {
 
@@ -555,11 +839,18 @@ function loadStoreForm() {
     config.storeDescription || "";
 
 
-  $("heroPreview").src =
+  const preview =
+    $("heroPreview");
+
+
+  if (!preview) return;
+
+
+  preview.src =
     config.heroImage || "";
 
 
-  $("heroPreview").style.display =
+  preview.style.display =
     config.heroImage
       ? "block"
       : "none";
@@ -632,21 +923,33 @@ function setupCategoryForm() {
         const file =
           event.target.files[0];
 
+
         if (!file) return;
 
 
         try {
 
           const image =
-            await readFileAsDataURL(file);
+            await readFileAsDataURL(
+              file,
+              900,
+              0.72
+            );
 
 
-          $("categoryPreview").src =
-            image;
+          const preview =
+            $("categoryPreview");
 
 
-          $("categoryPreview").style.display =
-            "block";
+          if (preview) {
+
+            preview.src =
+              image;
+
+            preview.style.display =
+              "block";
+
+          }
 
         } catch (error) {
 
@@ -682,24 +985,25 @@ function setupCategoryForm() {
 
         const name =
           $("categoryName")
-            .value
-            .trim();
+            ?.value
+            ?.trim() || "";
 
 
         const oldId =
           $("categoryId")
-            .value
-            .trim();
+            ?.value
+            ?.trim() || "";
 
 
         const file =
           $("categoryImage")
-            .files[0];
+            ?.files?.[0];
 
 
-        /* ============================================
-           SOMENTE O NOME É NECESSÁRIO
-           ============================================ */
+        /*
+         * O identificador NÃO é obrigatório.
+         * Somente o nome é necessário.
+         */
 
         if (!name) {
 
@@ -707,35 +1011,28 @@ function setupCategoryForm() {
             "Digite o nome da categoria."
           );
 
-          $("categoryName").focus();
+          $("categoryName")?.focus();
 
           return;
 
         }
 
 
-        /* ============================================
-           CRIA ID AUTOMATICAMENTE
-           ============================================ */
+        /*
+         * Se estamos editando, mantém o ID.
+         *
+         * Se estamos criando, gera automaticamente.
+         */
 
         let id;
 
 
         if (oldId) {
 
-          /*
-           * Estamos editando.
-           * Mantém o ID antigo.
-           */
-
-          id = oldId;
+          id =
+            oldId;
 
         } else {
-
-          /*
-           * Estamos criando.
-           * Gera automaticamente.
-           */
 
           id =
             generateCategoryId(
@@ -745,17 +1042,22 @@ function setupCategoryForm() {
         }
 
 
-        /* ============================================
-           IMAGEM
-           ============================================ */
+        /*
+         * Imagem
+         */
 
-        let image = "";
+        let image =
+          "";
 
 
         if (file) {
 
           image =
-            await readFileAsDataURL(file);
+            await readFileAsDataURL(
+              file,
+              900,
+              0.72
+            );
 
         } else if (oldId) {
 
@@ -777,24 +1079,27 @@ function setupCategoryForm() {
         }
 
 
-        /* ============================================
-           OBJETO DA CATEGORIA
-           ============================================ */
+        /*
+         * Categoria final
+         */
 
         const category = {
 
-          id: id,
+          id:
+            id,
 
-          name: name,
+          name:
+            name,
 
-          image: image
+          image:
+            image
 
         };
 
 
-        /* ============================================
-           PROCURAR CATEGORIA EXISTENTE
-           ============================================ */
+        /*
+         * Verifica se estamos editando.
+         */
 
         const existingIndex =
           categories.findIndex(
@@ -804,26 +1109,23 @@ function setupCategoryForm() {
           );
 
 
-        /* ============================================
-           EDITAR
-           ============================================ */
-
         if (
           oldId &&
           existingIndex >= 0
         ) {
 
+          /*
+           * Editar categoria
+           */
+
           categories[existingIndex] =
             category;
 
-        }
+        } else {
 
-
-        /* ============================================
-           CRIAR
-           ============================================ */
-
-        else {
+          /*
+           * Criar categoria
+           */
 
           categories.push(
             category
@@ -832,25 +1134,45 @@ function setupCategoryForm() {
         }
 
 
-        /* ============================================
-           SALVAR
-           ============================================ */
+        /*
+         * Salva as categorias.
+         */
 
-        const saved =
+        const categoriesSaved =
           save(
             CATEGORIES_KEY,
             categories
           );
 
 
-        if (!saved) {
+        /*
+         * Se não conseguiu salvar,
+         * não continua.
+         */
+
+        if (!categoriesSaved) {
+
+          /*
+           * Recarrega o estado anterior
+           * caso o localStorage tenha recusado.
+           */
+
+          categories =
+            load(
+              CATEGORIES_KEY,
+              categories
+            );
+
+          renderAll();
+
           return;
+
         }
 
 
-        /* ============================================
-           ATUALIZAR PRODUTOS SE NECESSÁRIO
-           ============================================ */
+        /*
+         * Se o ID mudou, atualiza os produtos.
+         */
 
         if (
           oldId &&
@@ -882,9 +1204,9 @@ function setupCategoryForm() {
         }
 
 
-        /* ============================================
-           ATUALIZA TELA
-           ============================================ */
+        /*
+         * Atualiza a interface.
+         */
 
         renderAll();
 
@@ -914,7 +1236,9 @@ function setupCategoryForm() {
 
 
         showToast(
-          "Erro ao criar a categoria. Veja o console."
+          `Erro ao criar categoria: ${
+            error?.message || "erro desconhecido"
+          }`
         );
 
       }
@@ -964,14 +1288,22 @@ function openCategoryForm(category = null) {
       category.name || "";
 
 
-    $("categoryPreview").src =
-      category.image || "";
+    const preview =
+      $("categoryPreview");
 
 
-    $("categoryPreview").style.display =
-      category.image
-        ? "block"
-        : "none";
+    if (preview) {
+
+      preview.src =
+        category.image || "";
+
+
+      preview.style.display =
+        category.image
+          ? "block"
+          : "none";
+
+    }
 
   } else {
 
@@ -984,12 +1316,21 @@ function openCategoryForm(category = null) {
       "";
 
 
-    $("categoryPreview")
-      .removeAttribute("src");
+    const preview =
+      $("categoryPreview");
 
 
-    $("categoryPreview").style.display =
-      "none";
+    if (preview) {
+
+      preview.removeAttribute(
+        "src"
+      );
+
+
+      preview.style.display =
+        "none";
+
+    }
 
   }
 
@@ -1003,7 +1344,7 @@ function openCategoryForm(category = null) {
   setTimeout(
     () => {
 
-      $("categoryName").focus();
+      $("categoryName")?.focus();
 
     },
     300
@@ -1038,16 +1379,29 @@ function closeCategoryForm() {
   }
 
 
-  $("categoryId").value =
-    "";
+  if ($("categoryId")) {
+
+    $("categoryId").value =
+      "";
+
+  }
 
 
-  $("categoryPreview")
-    .removeAttribute("src");
+  const preview =
+    $("categoryPreview");
 
 
-  $("categoryPreview").style.display =
-    "none";
+  if (preview) {
+
+    preview.removeAttribute(
+      "src"
+    );
+
+
+    preview.style.display =
+      "none";
+
+  }
 
 }
 
@@ -1115,7 +1469,6 @@ function renderCategories() {
               `
           }
 
-
           <div>
 
             <h3>
@@ -1131,7 +1484,6 @@ function renderCategories() {
 
         </div>
 
-
         <div class="editor-actions">
 
           <button
@@ -1140,7 +1492,6 @@ function renderCategories() {
           >
             Editar
           </button>
-
 
           <button
             type="button"
@@ -1167,28 +1518,36 @@ function renderCategories() {
         );
 
 
-      editButton.addEventListener(
-        "click",
-        () => {
+      if (editButton) {
 
-          openCategoryForm(
-            category
-          );
+        editButton.addEventListener(
+          "click",
+          () => {
 
-        }
-      );
+            openCategoryForm(
+              category
+            );
+
+          }
+        );
+
+      }
 
 
-      deleteButton.addEventListener(
-        "click",
-        () => {
+      if (deleteButton) {
 
-          removeCategory(
-            category.id
-          );
+        deleteButton.addEventListener(
+          "click",
+          () => {
 
-        }
-      );
+            removeCategory(
+              category.id
+            );
+
+          }
+        );
+
+      }
 
 
       container.appendChild(
@@ -1237,6 +1596,10 @@ function removeCategory(id) {
   }
 
 
+  const previousCategories =
+    categories;
+
+
   categories =
     categories.filter(
       category =>
@@ -1245,10 +1608,23 @@ function removeCategory(id) {
     );
 
 
-  save(
-    CATEGORIES_KEY,
-    categories
-  );
+  const saved =
+    save(
+      CATEGORIES_KEY,
+      categories
+    );
+
+
+  if (!saved) {
+
+    categories =
+      previousCategories;
+
+    renderAll();
+
+    return;
+
+  }
 
 
   renderAll();
@@ -1326,21 +1702,34 @@ function setupProductForm() {
         const file =
           event.target.files[0];
 
+
         if (!file) return;
 
 
         try {
 
           const image =
-            await readFileAsDataURL(file);
+            await readFileAsDataURL(
+              file,
+              1000,
+              0.72
+            );
 
 
-          $("productPreview").src =
-            image;
+          const preview =
+            $("productPreview");
 
 
-          $("productPreview").style.display =
-            "block";
+          if (preview) {
+
+            preview.src =
+              image;
+
+
+            preview.style.display =
+              "block";
+
+          }
 
         } catch (error) {
 
@@ -1376,30 +1765,31 @@ function setupProductForm() {
 
         const name =
           $("productName")
-            .value
-            .trim();
+            ?.value
+            ?.trim() || "";
 
 
         const category =
           $("productCategory")
-            .value;
+            ?.value || "";
 
 
         const idValue =
           $("productId")
-            .value;
+            ?.value || "";
 
 
         const mainImageFile =
           $("productImage")
-            .files[0];
+            ?.files?.[0];
 
 
         const additionalFiles =
-          Array.from(
-            $("productImages")
-              .files
-          );
+          $("productImages")
+            ? Array.from(
+                $("productImages").files || []
+              )
+            : [];
 
 
         if (!name || !category) {
@@ -1430,7 +1820,9 @@ function setupProductForm() {
 
           image =
             await readFileAsDataURL(
-              mainImageFile
+              mainImageFile,
+              1000,
+              0.72
             );
 
         }
@@ -1448,7 +1840,9 @@ function setupProductForm() {
               additionalFiles.map(
                 file =>
                   readFileAsDataURL(
-                    file
+                    file,
+                    1000,
+                    0.72
                   )
               )
             );
@@ -1458,9 +1852,10 @@ function setupProductForm() {
 
         const product = {
 
-          id: idValue
-            ? Number(idValue)
-            : getNextProductId(),
+          id:
+            idValue
+              ? Number(idValue)
+              : getNextProductId(),
 
           name,
 
@@ -1469,23 +1864,23 @@ function setupProductForm() {
           price:
             Number(
               $("productPrice")
-                .value || 0
+                ?.value || 0
             ),
 
           oldPrice:
             Number(
               $("productOldPrice")
-                .value || 0
+                ?.value || 0
             ),
 
           rating:
             $("productRating")
-              .value
-              .trim() || "5.0",
+              ?.value
+              ?.trim() || "5.0",
 
           status:
             $("productStatus")
-              .value,
+              ?.value || "active",
 
           image,
 
@@ -1493,18 +1888,18 @@ function setupProductForm() {
 
           purchaseLink:
             $("productPurchaseLink")
-              .value
-              .trim() || "#",
+              ?.value
+              ?.trim() || "#",
 
           descriptionTitle:
             $("productDescriptionTitle")
-              .value
-              .trim(),
+              ?.value
+              ?.trim() || "",
 
           description:
             $("productDescription")
-              .value
-              .trim()
+              ?.value
+              ?.trim() || ""
 
         };
 
@@ -1515,6 +1910,10 @@ function setupProductForm() {
               Number(item.id) ===
               Number(product.id)
           );
+
+
+        const previousProducts =
+          [...products];
 
 
         if (index >= 0) {
@@ -1531,10 +1930,23 @@ function setupProductForm() {
         }
 
 
-        save(
-          PRODUCTS_KEY,
-          products
-        );
+        const saved =
+          save(
+            PRODUCTS_KEY,
+            products
+          );
+
+
+        if (!saved) {
+
+          products =
+            previousProducts;
+
+          renderAll();
+
+          return;
+
+        }
 
 
         renderAll();
@@ -1547,6 +1959,7 @@ function setupProductForm() {
           "Produto salvo."
         );
 
+
       } catch (error) {
 
         console.error(
@@ -1554,8 +1967,11 @@ function setupProductForm() {
           error
         );
 
+
         showToast(
-          "Erro ao salvar produto."
+          `Erro ao salvar produto: ${
+            error?.message || "erro desconhecido"
+          }`
         );
 
       }
@@ -1640,14 +2056,22 @@ function openProductForm(product = null) {
       product.description || "";
 
 
-    $("productPreview").src =
-      product.image || "";
+    const preview =
+      $("productPreview");
 
 
-    $("productPreview").style.display =
-      product.image
-        ? "block"
-        : "none";
+    if (preview) {
+
+      preview.src =
+        product.image || "";
+
+
+      preview.style.display =
+        product.image
+          ? "block"
+          : "none";
+
+    }
 
   } else {
 
@@ -1668,12 +2092,21 @@ function openProductForm(product = null) {
       "5.0";
 
 
-    $("productPreview")
-      .removeAttribute("src");
+    const preview =
+      $("productPreview");
 
 
-    $("productPreview").style.display =
-      "none";
+    if (preview) {
+
+      preview.removeAttribute(
+        "src"
+      );
+
+
+      preview.style.display =
+        "none";
+
+    }
 
   }
 
@@ -1712,16 +2145,29 @@ function closeProductForm() {
   }
 
 
-  $("productId").value =
-    "";
+  if ($("productId")) {
+
+    $("productId").value =
+      "";
+
+  }
 
 
-  $("productPreview")
-    .removeAttribute("src");
+  const preview =
+    $("productPreview");
 
 
-  $("productPreview").style.display =
-    "none";
+  if (preview) {
+
+    preview.removeAttribute(
+      "src"
+    );
+
+
+    preview.style.display =
+      "none";
+
+  }
 
 }
 
@@ -1867,13 +2313,11 @@ function renderProducts() {
               `
           }
 
-
           <div>
 
             <h3>
               ${escapeHTML(product.name)}
             </h3>
-
 
             <p>
 
@@ -1897,7 +2341,6 @@ function renderProducts() {
 
         </div>
 
-
         <div class="editor-actions">
 
           <button
@@ -1906,7 +2349,6 @@ function renderProducts() {
           >
             Editar
           </button>
-
 
           <button
             type="button"
@@ -1921,11 +2363,21 @@ function renderProducts() {
       `;
 
 
-      item
-        .querySelector(
+      const editButton =
+        item.querySelector(
           '[data-action="edit"]'
-        )
-        .addEventListener(
+        );
+
+
+      const deleteButton =
+        item.querySelector(
+          '[data-action="delete"]'
+        );
+
+
+      if (editButton) {
+
+        editButton.addEventListener(
           "click",
           () => {
 
@@ -1936,12 +2388,12 @@ function renderProducts() {
           }
         );
 
+      }
 
-      item
-        .querySelector(
-          '[data-action="delete"]'
-        )
-        .addEventListener(
+
+      if (deleteButton) {
+
+        deleteButton.addEventListener(
           "click",
           () => {
 
@@ -1951,6 +2403,8 @@ function renderProducts() {
 
           }
         );
+
+      }
 
 
       container.appendChild(
@@ -1980,17 +2434,35 @@ function removeProduct(id) {
   }
 
 
+  const previousProducts =
+    products;
+
+
   products =
     products.filter(
       product =>
-        product.id !== id
+        Number(product.id) !==
+        Number(id)
     );
 
 
-  save(
-    PRODUCTS_KEY,
-    products
-  );
+  const saved =
+    save(
+      PRODUCTS_KEY,
+      products
+    );
+
+
+  if (!saved) {
+
+    products =
+      previousProducts;
+
+    renderAll();
+
+    return;
+
+  }
 
 
   renderAll();
@@ -2046,32 +2518,36 @@ function setupSupportForm() {
 
       config.discord =
         $("discord")
-          .value
-          .trim();
+          ?.value
+          ?.trim() || "";
 
 
       config.whatsapp =
         $("whatsapp")
-          .value
-          .trim();
+          ?.value
+          ?.trim() || "";
 
 
       config.tiktok =
         $("tiktok")
-          .value
-          .trim();
+          ?.value
+          ?.trim() || "";
 
 
       config.instagram =
         $("instagram")
-          .value
-          .trim();
+          ?.value
+          ?.trim() || "";
 
 
-      save(
-        CONFIG_KEY,
-        config
-      );
+      const saved =
+        save(
+          CONFIG_KEY,
+          config
+        );
+
+
+      if (!saved) return;
 
 
       showToast(
@@ -2113,22 +2589,43 @@ function loadSupportForm() {
 
 function saveEverything() {
 
-  save(
-    PRODUCTS_KEY,
-    products
-  );
+  const productsSaved =
+    save(
+      PRODUCTS_KEY,
+      products
+    );
 
 
-  save(
-    CATEGORIES_KEY,
-    categories
-  );
+  if (!productsSaved) {
+    return false;
+  }
 
 
-  save(
-    CONFIG_KEY,
-    config
-  );
+  const categoriesSaved =
+    save(
+      CATEGORIES_KEY,
+      categories
+    );
+
+
+  if (!categoriesSaved) {
+    return false;
+  }
+
+
+  const configSaved =
+    save(
+      CONFIG_KEY,
+      config
+    );
+
+
+  if (!configSaved) {
+    return false;
+  }
+
+
+  return true;
 
 }
 
@@ -2196,7 +2693,8 @@ function showToast(message) {
         );
 
       },
-      2600
+      3000
     );
 
 }
+```
