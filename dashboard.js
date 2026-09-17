@@ -1,146 +1,223 @@
+/* =========================================================
+   ROMA STORE — DASHBOARD
+   Versão corrigida
+   ========================================================= */
+
 const SUPABASE_URL = "https://fqkrokgagxklcmvyaqtr.supabase.co";
-const SUPABASE_KEY = "COLOQUE_SUA_PUBLISHABLE_KEY_AQUI";
+const SUPABASE_KEY = "sb_publishable_mt-o5M3NQDgXLboKB8FuAQ_c3z1l_wZ";
 
 const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_KEY
 );
 
-const PRODUCTS_KEY = "roma_store_products";
-const CATEGORIES_KEY = "roma_store_categories";
-const CONFIG_KEY = "roma_store_config";
+/* =========================================================
+   ESTADO
+   ========================================================= */
 
-const defaultProducts = [
-  {
-    id: 1,
-    name: "Otimização Avançada",
-    category: "otimizacao",
-    price: 34.99,
-    oldPrice: 45,
-    rating: "5.0",
-    status: "active",
-    image: "",
-    images: [],
-    purchaseLink: "#",
-    descriptionTitle: "OTIMIZAÇÃO AVANÇADA",
-    description: "Descrição do produto."
-  }
-];
+let products = [];
+let categories = [];
 
-const defaultCategories = [
-  {
-    id: "otimizacao",
-    name: "Otimização",
-    image: ""
-  },
-  {
-    id: "windows",
-    name: "Windows",
-    image: ""
-  },
-  {
-    id: "personalizacao",
-    name: "Personalização",
-    image: ""
-  },
-  {
-    id: "ferramentas",
-    name: "Ferramentas",
-    image: ""
-  }
-];
-
-const defaultConfig = {
-  storeName: "roma store",
-  storeDescription: "Sua loja de tecnologia.",
-  heroImage: "assets/Identidade Visual Roma Store.png",
-  discord: "https://discord.gg/eKUaZD97aD",
-  whatsapp: "https://wa.me/5561999069108",
-  tiktok: "https://www.tiktok.com/@roma.zx0",
-  instagram: "https://www.instagram.com/roma.zx0/"
+let config = {
+  storeName: "Roma Store",
+  storeDescription: "",
+  heroImage: "",
+  supportWhatsapp: "",
+  supportInstagram: "",
+  supportTelegram: ""
 };
 
-const $ = id => document.getElementById(id);
+let support = {
+  whatsapp: "",
+  instagram: "",
+  telegram: ""
+};
 
-function clone(value) {
-  return JSON.parse(JSON.stringify(value));
+let editingCategoryId = null;
+let editingCategoryImage = "";
+
+let editingProductId = null;
+let editingProductImage = "";
+
+let initialized = false;
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+
+function $(id) {
+  return document.getElementById(id);
+}
+
+function qs(selector) {
+  return document.querySelector(selector);
+}
+
+function qsa(selector) {
+  return Array.from(document.querySelectorAll(selector));
 }
 
 /* =========================================================
-   LOCAL CACHE
-========================================================= */
-
-function load(key, fallback) {
-  try {
-    const saved = localStorage.getItem(key);
-
-    if (!saved) {
-      return clone(fallback);
-    }
-
-    return JSON.parse(saved);
-  } catch (error) {
-    console.error("Erro ao carregar:", key, error);
-    return clone(fallback);
-  }
-}
+   LOCAL STORAGE
+   ========================================================= */
 
 function saveLocal(key, value) {
   try {
-    localStorage.setItem(
-      key,
-      JSON.stringify(value)
-    );
-
-    return true;
+    localStorage.setItem(key, JSON.stringify(value));
   } catch (error) {
-    console.error(
-      "Erro ao salvar local:",
-      error
-    );
-
-    return false;
+    console.error("Erro ao salvar localStorage:", error);
   }
 }
 
-/* =========================================================
-   DADOS
-========================================================= */
+function loadLocal(key, fallback) {
+  try {
+    const value = localStorage.getItem(key);
 
-let products = load(
-  PRODUCTS_KEY,
-  defaultProducts
-);
+    if (!value) {
+      return fallback;
+    }
 
-let categories = load(
-  CATEGORIES_KEY,
-  defaultCategories
-);
-
-let config = {
-  ...defaultConfig,
-  ...load(CONFIG_KEY, defaultConfig)
-};
-
-if (!Array.isArray(products)) {
-  products = clone(defaultProducts);
+    return JSON.parse(value);
+  } catch (error) {
+    console.error("Erro ao carregar localStorage:", error);
+    return fallback;
+  }
 }
 
-if (!Array.isArray(categories)) {
-  categories = clone(defaultCategories);
+function saveLocalData() {
+  saveLocal("roma_store_products", products);
+  saveLocal("roma_store_categories", categories);
+  saveLocal("roma_store_config", config);
+  saveLocal("roma_store_support", support);
 }
 
 /* =========================================================
-   ESTADO
-========================================================= */
+   SUPABASE MAPPERS
+   ========================================================= */
 
-let dashboardInitialized = false;
+function productFromSupabase(row) {
+  if (!row) return null;
+
+  return {
+    id: row.id,
+    name: row.name || "",
+    category: row.category || "",
+    price: Number(row.price || 0),
+    oldPrice:
+      row.old_price !== null &&
+      row.old_price !== undefined
+        ? Number(row.old_price)
+        : null,
+
+    image: row.image || "",
+
+    images: Array.isArray(row.images)
+      ? row.images
+      : [],
+
+    description: row.description || "",
+    descriptionTitle: row.description_title || "",
+
+    purchaseLink: row.purchase_link || "",
+
+    featured: Boolean(row.featured),
+    active:
+      row.active === undefined ||
+      row.active === null
+        ? true
+        : Boolean(row.active)
+  };
+}
+
+function productToSupabase(product) {
+  return {
+    id: product.id,
+    name: product.name || "",
+    category: product.category || "",
+    price: Number(product.price || 0),
+
+    old_price:
+      product.oldPrice === null ||
+      product.oldPrice === undefined ||
+      product.oldPrice === ""
+        ? null
+        : Number(product.oldPrice),
+
+    image: product.image || "",
+
+    images: Array.isArray(product.images)
+      ? product.images
+      : [],
+
+    description: product.description || "",
+    description_title: product.descriptionTitle || "",
+
+    purchase_link: product.purchaseLink || "",
+
+    featured: Boolean(product.featured),
+    active:
+      product.active === undefined
+        ? true
+        : Boolean(product.active)
+  };
+}
+
+function categoryFromSupabase(row) {
+  if (!row) return null;
+
+  return {
+    id: String(row.id),
+    name: row.name || "",
+    image: row.image || ""
+  };
+}
+
+function categoryToSupabase(category) {
+  return {
+    id: category.id,
+    name: category.name || "",
+    image: category.image || ""
+  };
+}
+
+function configFromSupabase(row) {
+  if (!row) return null;
+
+  return {
+    storeName: row.store_name || "Roma Store",
+    storeDescription: row.store_description || "",
+    heroImage: row.hero_image || "",
+
+    supportWhatsapp: row.support_whatsapp || "",
+    supportInstagram: row.support_instagram || "",
+    supportTelegram: row.support_telegram || ""
+  };
+}
+
+function configToSupabase() {
+  return {
+    id: 1,
+
+    store_name: config.storeName || "",
+    store_description: config.storeDescription || "",
+    hero_image: config.heroImage || "",
+
+    support_whatsapp:
+      config.supportWhatsapp || support.whatsapp || "",
+
+    support_instagram:
+      config.supportInstagram || support.instagram || "",
+
+    support_telegram:
+      config.supportTelegram || support.telegram || ""
+  };
+}
 
 /* =========================================================
-   UTILIDADES
-========================================================= */
+   IMAGEM → BASE64
+   ========================================================= */
 
-function readFileAsDataURL(file) {
+function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     if (!file) {
       resolve("");
@@ -154,104 +231,61 @@ function readFileAsDataURL(file) {
     };
 
     reader.onerror = () => {
-      reject(
-        new Error(
-          "Erro ao ler a imagem."
-        )
-      );
+      reject(new Error("Não foi possível ler a imagem."));
     };
 
     reader.readAsDataURL(file);
   });
 }
 
-function normalizeId(value) {
-  return String(value || "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(
-      /[\u0300-\u036f]/g,
-      ""
-    )
-    .replace(
-      /[^a-z0-9]+/g,
-      "-"
-    )
-    .replace(
-      /^-+|-+$/g,
-      "");
-}
+/* =========================================================
+   CARREGAR DADOS LOCAIS
+   ========================================================= */
 
-function createUniqueCategoryId(
-  name,
-  ignoreId = null
-) {
-  const base =
-    normalizeId(name) ||
-    "categoria";
+function loadLocalData() {
+  products = loadLocal("roma_store_products", []);
+  categories = loadLocal("roma_store_categories", []);
 
-  let id = base;
-  let counter = 2;
+  config = loadLocal(
+    "roma_store_config",
+    {
+      storeName: "Roma Store",
+      storeDescription: "",
+      heroImage: "",
+      supportWhatsapp: "",
+      supportInstagram: "",
+      supportTelegram: ""
+    }
+  );
 
-  while (
-    categories.some(category =>
-      String(category.id) ===
-        String(id) &&
-      String(category.id) !==
-        String(ignoreId)
-    )
-  ) {
-    id =
-      `${base}-${counter}`;
-    counter++;
-  }
-
-  return id;
-}
-
-function escapeHTML(value) {
-  return String(value ?? "")
-    .replace(
-      /[&<>"']/g,
-      char =>
-        ({
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;",
-          '"': "&quot;",
-          "'": "&#039;"
-        }[char])
-    );
-}
-
-function escapeAttribute(value) {
-  return escapeHTML(value);
+  support = loadLocal(
+    "roma_store_support",
+    {
+      whatsapp: config.supportWhatsapp || "",
+      instagram: config.supportInstagram || "",
+      telegram: config.supportTelegram || ""
+    }
+  );
 }
 
 /* =========================================================
-   SUPABASE - CARREGAR
-========================================================= */
+   CARREGAR SUPABASE
+   ========================================================= */
 
 async function loadSupabaseData() {
   try {
     const [
-      productsResponse,
-      categoriesResponse,
-      configResponse
+      productsResult,
+      categoriesResult,
+      configResult
     ] = await Promise.all([
       supabaseClient
         .from("products")
-        .select("*")
-        .order("id", {
-          ascending: true
-        }),
+        .select("*"),
 
       supabaseClient
         .from("categories")
-        .select("*")
-        .order("id", {
-          ascending: true
-        }),
+        .select("*"),
 
       supabaseClient
         .from("store_config")
@@ -260,157 +294,73 @@ async function loadSupabaseData() {
         .maybeSingle()
     ]);
 
-    if (productsResponse.error) {
-      throw productsResponse.error;
+    if (productsResult.error) {
+      console.error(
+        "Erro ao carregar produtos:",
+        productsResult.error
+      );
     }
 
-    if (categoriesResponse.error) {
-      throw categoriesResponse.error;
+    if (categoriesResult.error) {
+      console.error(
+        "Erro ao carregar categorias:",
+        categoriesResult.error
+      );
     }
 
-    if (configResponse.error) {
-      throw configResponse.error;
-    }
-
-    if (
-      Array.isArray(
-        productsResponse.data
-      ) &&
-      productsResponse.data.length
-    ) {
-      products =
-        productsResponse.data.map(
-          product => ({
-            id: product.id,
-
-            name:
-              product.name || "",
-
-            category:
-              product.category || "",
-
-            price:
-              Number(product.price) || 0,
-
-            oldPrice:
-              product.old_price === null ||
-              product.old_price === undefined
-                ? 0
-                : Number(
-                    product.old_price
-                  ),
-
-            rating:
-              product.rating === null ||
-              product.rating === undefined
-                ? "5.0"
-                : String(
-                    product.rating
-                  ),
-
-            status:
-              product.status ||
-              "active",
-
-            image:
-              product.image || "",
-
-            images:
-              Array.isArray(
-                product.images
-              )
-                ? product.images
-                : [],
-
-            purchaseLink:
-              product.purchase_link ||
-              "#",
-
-            descriptionTitle:
-              product.description_title ||
-              "",
-
-            description:
-              product.description ||
-              ""
-          })
-        );
-
-      saveLocal(
-        PRODUCTS_KEY,
-        products
+    if (configResult.error) {
+      console.error(
+        "Erro ao carregar configuração:",
+        configResult.error
       );
     }
 
     if (
-      Array.isArray(
-        categoriesResponse.data
-      ) &&
-      categoriesResponse.data.length
+      !productsResult.error &&
+      Array.isArray(productsResult.data)
     ) {
-      categories =
-        categoriesResponse.data.map(
-          category => ({
-            id: category.id,
-
-            name:
-              category.name || "",
-
-            image:
-              category.image || ""
-          })
-        );
-
-      saveLocal(
-        CATEGORIES_KEY,
-        categories
-      );
+      products = productsResult.data
+        .map(productFromSupabase)
+        .filter(Boolean);
     }
 
-    if (configResponse.data) {
-      const data =
-        configResponse.data;
-
-      config = {
-        storeName:
-          data.store_name ||
-          defaultConfig.storeName,
-
-        storeDescription:
-          data.store_description ||
-          defaultConfig.storeDescription,
-
-        heroImage:
-          data.hero_image ||
-          defaultConfig.heroImage,
-
-        discord:
-          data.discord ||
-          defaultConfig.discord,
-
-        whatsapp:
-          data.whatsapp ||
-          defaultConfig.whatsapp,
-
-        tiktok:
-          data.tiktok ||
-          defaultConfig.tiktok,
-
-        instagram:
-          data.instagram ||
-          defaultConfig.instagram
-      };
-
-      saveLocal(
-        CONFIG_KEY,
-        config
-      );
+    if (
+      !categoriesResult.error &&
+      Array.isArray(categoriesResult.data)
+    ) {
+      categories = categoriesResult.data
+        .map(categoryFromSupabase)
+        .filter(Boolean);
     }
+
+    if (
+      !configResult.error &&
+      configResult.data
+    ) {
+      const onlineConfig =
+        configFromSupabase(configResult.data);
+
+      if (onlineConfig) {
+        config = {
+          ...config,
+          ...onlineConfig
+        };
+
+        support = {
+          whatsapp: onlineConfig.supportWhatsapp || "",
+          instagram: onlineConfig.supportInstagram || "",
+          telegram: onlineConfig.supportTelegram || ""
+        };
+      }
+    }
+
+    saveLocalData();
 
     return true;
+
   } catch (error) {
     console.error(
-      "Erro ao carregar dados do Supabase:",
+      "Erro geral ao carregar Supabase:",
       error
     );
 
@@ -419,277 +369,96 @@ async function loadSupabaseData() {
 }
 
 /* =========================================================
-   SUPABASE - PRODUTOS
-========================================================= */
+   SALVAR PRODUTOS ONLINE
+   ========================================================= */
 
 async function saveProductsOnline() {
-  const rows =
-    products.map(product => ({
-      id: product.id,
+  const rows = products.map(productToSupabase);
 
-      name:
-        product.name || "",
-
-      category:
-        product.category || "",
-
-      price:
-        Number(product.price) || 0,
-
-      old_price:
-        product.oldPrice === "" ||
-        product.oldPrice === null ||
-        product.oldPrice === undefined
-          ? null
-          : Number(
-              product.oldPrice
-            ),
-
-      rating:
-        product.rating === "" ||
-        product.rating === null ||
-        product.rating === undefined
-          ? "5.0"
-          : String(
-              product.rating
-            ),
-
-      status:
-        product.status ||
-        "active",
-
-      image:
-        product.image || "",
-
-      images:
-        Array.isArray(product.images)
-          ? product.images
-          : [],
-
-      purchase_link:
-        product.purchaseLink ||
-        "#",
-
-      description_title:
-        product.descriptionTitle ||
-        "",
-
-      description:
-        product.description ||
-        ""
-    }));
-
-  const {
-    data: existing,
-    error: existingError
-  } = await supabaseClient
-    .from("products")
-    .select("id");
-
-  if (existingError) {
-    throw existingError;
-  }
-
-  if (rows.length) {
-    const {
-      error
-    } = await supabaseClient
+  if (rows.length > 0) {
+    const { error } = await supabaseClient
       .from("products")
-      .upsert(
-        rows,
-        {
-          onConflict: "id"
-        }
-      );
+      .upsert(rows, {
+        onConflict: "id"
+      });
 
     if (error) {
+      console.error(
+        "Erro ao salvar produtos:",
+        error
+      );
+
       throw error;
     }
   }
 
-  const currentIds =
-    rows.map(
-      row => String(row.id)
-    );
-
-  const removeIds =
-    (existing || [])
-      .map(
-        row => String(row.id)
-      )
-      .filter(
-        id =>
-          !currentIds.includes(id)
-      );
-
-  if (removeIds.length) {
-    const {
-      error
-    } = await supabaseClient
-      .from("products")
-      .delete()
-      .in(
-        "id",
-        removeIds
-      );
-
-    if (error) {
-      throw error;
-    }
-  }
+  return true;
 }
 
 /* =========================================================
-   SUPABASE - CATEGORIAS
-========================================================= */
+   SALVAR CATEGORIAS ONLINE
+   ========================================================= */
 
 async function saveCategoriesOnline() {
-  const rows =
-    categories.map(category => ({
-      id: category.id,
+  const rows = categories.map(categoryToSupabase);
 
-      name:
-        category.name || "",
-
-      image:
-        category.image || ""
-    }));
-
-  const {
-    data: existing,
-    error: existingError
-  } = await supabaseClient
-    .from("categories")
-    .select("id");
-
-  if (existingError) {
-    throw existingError;
-  }
-
-  if (rows.length) {
-    const {
-      error
-    } = await supabaseClient
+  if (rows.length > 0) {
+    const { error } = await supabaseClient
       .from("categories")
-      .upsert(
-        rows,
-        {
-          onConflict: "id"
-        }
-      );
+      .upsert(rows, {
+        onConflict: "id"
+      });
 
     if (error) {
+      console.error(
+        "Erro ao salvar categorias:",
+        error
+      );
+
       throw error;
     }
   }
 
-  const currentIds =
-    rows.map(
-      row => String(row.id)
-    );
-
-  const removeIds =
-    (existing || [])
-      .map(
-        row => String(row.id)
-      )
-      .filter(
-        id =>
-          !currentIds.includes(id)
-      );
-
-  if (removeIds.length) {
-    const {
-      error
-    } = await supabaseClient
-      .from("categories")
-      .delete()
-      .in(
-        "id",
-        removeIds
-      );
-
-    if (error) {
-      throw error;
-    }
-  }
+  return true;
 }
 
 /* =========================================================
-   SUPABASE - CONFIG
-========================================================= */
+   SALVAR CONFIG ONLINE
+   ========================================================= */
 
 async function saveConfigOnline() {
-  const row = {
-    id: 1,
+  const row = configToSupabase();
 
-    store_name:
-      config.storeName || "",
-
-    store_description:
-      config.storeDescription ||
-      "",
-
-    hero_image:
-      config.heroImage || "",
-
-    discord:
-      config.discord || "",
-
-    whatsapp:
-      config.whatsapp || "",
-
-    tiktok:
-      config.tiktok || "",
-
-    instagram:
-      config.instagram || ""
-  };
-
-  const {
-    error
-  } = await supabaseClient
+  const { error } = await supabaseClient
     .from("store_config")
-    .upsert(
-      row,
-      {
-        onConflict: "id"
-      }
-    );
+    .upsert(row, {
+      onConflict: "id"
+    });
 
   if (error) {
+    console.error(
+      "Erro ao salvar configuração:",
+      error
+    );
+
     throw error;
   }
+
+  return true;
 }
 
 /* =========================================================
-   SALVAR ONLINE
-========================================================= */
+   SALVAR TUDO
+   ========================================================= */
 
 async function saveEverything() {
+  saveLocalData();
+
   try {
-    /*
-     * CACHE LOCAL
-     */
-
-    saveLocal(
-      PRODUCTS_KEY,
-      products
+    showToast(
+      "Salvando alterações...",
+      "success"
     );
-
-    saveLocal(
-      CATEGORIES_KEY,
-      categories
-    );
-
-    saveLocal(
-      CONFIG_KEY,
-      config
-    );
-
-    /*
-     * BANCO ONLINE
-     */
 
     await Promise.all([
       saveProductsOnline(),
@@ -697,708 +466,360 @@ async function saveEverything() {
       saveConfigOnline()
     ]);
 
-    return true;
-  } catch (error) {
-    console.error(
-      "Erro ao salvar online:",
-      error
+    saveLocalData();
+
+    showToast(
+      "Alterações salvas online!",
+      "success"
     );
 
-    if (
-      error &&
-      (
-        error.code ===
-          "42501" ||
-        error.status === 401 ||
-        error.status === 403
-      )
-    ) {
-      showToast(
-        "O Supabase bloqueou a gravação. Verifique o login e as políticas RLS."
-      );
-    } else {
-      showToast(
-        "Erro ao salvar online. Veja o console."
-      );
-    }
+    renderAll();
+
+    return true;
+
+  } catch (error) {
+    console.error(error);
+
+    showToast(
+      "Não foi possível salvar online. Verifique o acesso do Supabase.",
+      "error"
+    );
 
     return false;
   }
 }
 
 /* =========================================================
-   INICIALIZAÇÃO
-========================================================= */
-
-document.addEventListener(
-  "DOMContentLoaded",
-  async () => {
-    /*
-     * EVITA INICIALIZAR DUAS VEZES
-     */
-
-    if (dashboardInitialized) {
-      return;
-    }
-
-    dashboardInitialized = true;
-
-    setupNavigation();
-    setupOverview();
-    setupStoreForm();
-    setupCategoryForm();
-    setupProductForm();
-    setupSupportForm();
-
-    renderAll();
-
-    /*
-     * BUSCA ONLINE DEPOIS
-     */
-
-    const online =
-      await loadSupabaseData();
-
-    if (online) {
-      renderAll();
-    }
-  }
-);
-
-/* =========================================================
    NAVEGAÇÃO
-========================================================= */
+   ========================================================= */
 
 function setupNavigation() {
-  document
-    .querySelectorAll(".nav-button")
-    .forEach(button => {
-      button.addEventListener(
-        "click",
-        () => {
-          showSection(
-            button.dataset.section
-          );
-        }
-      );
+  qsa("[data-section]").forEach(button => {
+    button.addEventListener("click", () => {
+      const section = button.dataset.section;
+
+      if (!section) return;
+
+      openSection(section);
     });
+  });
 
-  document
-    .querySelectorAll(
-      "[data-go-section]"
-    )
-    .forEach(button => {
-      button.addEventListener(
-        "click",
-        () => {
-          showSection(
-            button.dataset.goSection
-          );
-        }
-      );
-    });
-}
+  qsa(".nav-button").forEach(button => {
+    if (button.dataset.navigationReady) return;
 
-function showSection(section) {
-  document
-    .querySelectorAll(".nav-button")
-    .forEach(button => {
-      button.classList.toggle(
-        "active",
-        button.dataset.section ===
-          section
-      );
-    });
+    button.dataset.navigationReady = "true";
 
-  document
-    .querySelectorAll(
-      ".dashboard-section"
-    )
-    .forEach(item => {
-      item.classList.toggle(
-        "active",
-        item.id ===
-          `section-${section}`
-      );
-    });
+    button.addEventListener("click", () => {
+      const section =
+        button.dataset.section ||
+        button.getAttribute("data-go-section");
 
-  const titles = {
-    overview:
-      "Visão geral",
-
-    store:
-      "Loja",
-
-    categories:
-      "Categorias",
-
-    products:
-      "Produtos",
-
-    support:
-      "Suporte"
-  };
-
-  if ($("pageTitle")) {
-    $("pageTitle").textContent =
-      titles[section] ||
-      "Dashboard";
-  }
-}
-
-/* =========================================================
-   OVERVIEW
-========================================================= */
-
-function setupOverview() {
-  const button =
-    $("saveAllButton");
-
-  if (!button) return;
-
-  button.addEventListener(
-    "click",
-    async () => {
-      button.disabled = true;
-
-      const oldText =
-        button.textContent;
-
-      button.textContent =
-        "Salvando...";
-
-      const success =
-        await saveEverything();
-
-      button.disabled = false;
-
-      button.textContent =
-        oldText;
-
-      if (success) {
-        showToast(
-          "Todas as alterações foram salvas online."
-        );
+      if (section) {
+        openSection(section);
       }
+    });
+  });
+}
+
+function openSection(sectionId) {
+  qsa(".dashboard-section").forEach(section => {
+    section.classList.remove("active");
+  });
+
+  const target =
+    $(sectionId) ||
+    qs(`[data-section-content="${sectionId}"]`);
+
+  if (target) {
+    target.classList.add("active");
+  }
+
+  qsa(".nav-button").forEach(button => {
+    button.classList.remove("active");
+
+    const buttonSection =
+      button.dataset.section ||
+      button.getAttribute("data-go-section");
+
+    if (buttonSection === sectionId) {
+      button.classList.add("active");
     }
-  );
-}
-
-function updateOverview() {
-  if (
-    $("overviewCategories")
-  ) {
-    $("overviewCategories")
-      .textContent =
-      categories.length;
-  }
-
-  if (
-    $("overviewProducts")
-  ) {
-    $("overviewProducts")
-      .textContent =
-      products.length;
-  }
-
-  if (
-    $("overviewActiveProducts")
-  ) {
-    $("overviewActiveProducts")
-      .textContent =
-      products.filter(
-        product =>
-          product.status !==
-          "inactive"
-      ).length;
-  }
-}
-
-/* =========================================================
-   LOJA
-========================================================= */
-
-function setupStoreForm() {
-  const hero =
-    $("heroImage");
-
-  const form =
-    $("storeForm");
-
-  if (hero) {
-    hero.addEventListener(
-      "change",
-      async event => {
-        const file =
-          event.target.files?.[0];
-
-        if (!file) return;
-
-        try {
-          const image =
-            await readFileAsDataURL(
-              file
-            );
-
-          if ($("heroPreview")) {
-            $("heroPreview").src =
-              image;
-
-            $("heroPreview")
-              .style.display =
-              "block";
-          }
-        } catch {
-          showToast(
-            "Não foi possível carregar o banner."
-          );
-        }
-      }
-    );
-  }
-
-  if (form) {
-    form.addEventListener(
-      "submit",
-      async event => {
-        event.preventDefault();
-
-        const file =
-          $("heroImage")
-            ?.files?.[0];
-
-        if (file) {
-          config.heroImage =
-            await readFileAsDataURL(
-              file
-            );
-        }
-
-        config.storeName =
-          $("storeName")
-            ?.value
-            .trim() || "";
-
-        config.storeDescription =
-          $("storeDescription")
-            ?.value
-            .trim() || "";
-
-        const success =
-          await saveEverything();
-
-        if (success) {
-          showToast(
-            "Dados da loja salvos online."
-          );
-        }
-      }
-    );
-  }
-}
-
-function loadStoreForm() {
-  if (!$("storeName")) {
-    return;
-  }
-
-  $("storeName").value =
-    config.storeName || "";
-
-  $("storeDescription").value =
-    config.storeDescription ||
-    "";
-
-  if ($("heroPreview")) {
-    $("heroPreview").src =
-      config.heroImage || "";
-
-    $("heroPreview")
-      .style.display =
-      config.heroImage
-        ? "block"
-        : "none";
-  }
+  });
 }
 
 /* =========================================================
    CATEGORIAS
-========================================================= */
+   ========================================================= */
 
-function setupCategoryForm() {
-  const newButton =
-    $("newCategoryButton");
+function openCategoryForm(category = null) {
+  editingCategoryId = category
+    ? String(category.id)
+    : null;
 
-  const cancelButton =
-    $("cancelCategoryButton");
+  editingCategoryImage = category
+    ? category.image || ""
+    : "";
 
-  const cancelBottom =
-    $("cancelCategoryButtonBottom");
-
-  const image =
-    $("categoryImage");
-
-  const form =
-    $("categoryForm");
-
-  if (newButton) {
-    newButton.addEventListener(
-      "click",
-      () => {
-        openCategoryForm();
-      }
-    );
-  }
-
-  if (cancelButton) {
-    cancelButton.addEventListener(
-      "click",
-      closeCategoryForm
-    );
-  }
-
-  if (cancelBottom) {
-    cancelBottom.addEventListener(
-      "click",
-      closeCategoryForm
-    );
-  }
-
-  if (image) {
-    image.addEventListener(
-      "change",
-      async event => {
-        const file =
-          event.target.files?.[0];
-
-        if (!file) return;
-
-        try {
-          const imageData =
-            await readFileAsDataURL(
-              file
-            );
-
-          if ($("categoryPreview")) {
-            $("categoryPreview").src =
-              imageData;
-
-            $("categoryPreview")
-              .style.display =
-              "block";
-          }
-        } catch {
-          showToast(
-            "Não foi possível carregar a imagem."
-          );
-        }
-      }
-    );
-  }
+  const form = $("categoryForm");
 
   if (form) {
-    form.addEventListener(
-      "submit",
-      async event => {
-        event.preventDefault();
-
-        try {
-          const name =
-            $("categoryName")
-              ?.value
-              .trim() || "";
-
-          const manualId =
-            $("categorySlug")
-              ?.value
-              .trim() || "";
-
-          const oldId =
-            $("categoryId")
-              ?.value
-              .trim() || "";
-
-          const file =
-            $("categoryImage")
-              ?.files?.[0];
-
-          if (!name) {
-            showToast(
-              "Digite o nome da categoria."
-            );
-
-            $("categoryName")?.focus();
-
-            return;
-          }
-
-          let id =
-            normalizeId(
-              manualId
-            );
-
-          if (!id) {
-            id =
-              oldId ||
-              createUniqueCategoryId(
-                name,
-                oldId
-              );
-          }
-
-          const duplicate =
-            categories.some(
-              category =>
-                String(
-                  category.id
-                ) ===
-                  String(id) &&
-                String(
-                  category.id
-                ) !==
-                  String(oldId)
-            );
-
-          if (duplicate) {
-            id =
-              createUniqueCategoryId(
-                name,
-                oldId
-              );
-          }
-
-          let imageData = "";
-
-          const oldCategory =
-            categories.find(
-              category =>
-                String(
-                  category.id
-                ) ===
-                String(oldId)
-            );
-
-          if (file) {
-            imageData =
-              await readFileAsDataURL(
-                file
-              );
-          } else {
-            imageData =
-              oldCategory?.image ||
-              "";
-          }
-
-          const category = {
-            id,
-            name,
-            image:
-              imageData
-          };
-
-          if (oldId) {
-            const index =
-              categories.findIndex(
-                item =>
-                  String(
-                    item.id
-                  ) ===
-                  String(oldId)
-              );
-
-            if (index !== -1) {
-              categories[index] =
-                category;
-            }
-
-            if (
-              String(oldId) !==
-              String(id)
-            ) {
-              products =
-                products.map(
-                  product => {
-                    if (
-                      String(
-                        product.category
-                      ) ===
-                      String(oldId)
-                    ) {
-                      return {
-                        ...product,
-                        category:
-                          id
-                      };
-                    }
-
-                    return product;
-                  }
-                );
-            }
-          } else {
-            categories.push(
-              category
-            );
-          }
-
-          const success =
-            await saveEverything();
-
-          if (!success) {
-            return;
-          }
-
-          renderAll();
-          closeCategoryForm();
-
-          showToast(
-            oldId
-              ? "Categoria atualizada com sucesso."
-              : "Categoria criada com sucesso."
-          );
-        } catch (error) {
-          console.error(
-            "Erro categoria:",
-            error
-          );
-
-          showToast(
-            "Erro ao salvar a categoria."
-          );
-        }
-      }
-    );
+    form.reset();
   }
-}function openCategoryForm(category = null) {
-  const formCard = $("categoryFormCard");
-  const formTitle = $("categoryFormTitle");
 
-  if (!formCard) return;
+  if ($("categoryName")) {
+    $("categoryName").value =
+      category ? category.name || "" : "";
+  }
 
-  if (category) {
-    if ($("categoryId")) $("categoryId").value = category.id ?? "";
-    if ($("categoryName")) $("categoryName").value = category.name ?? "";
-    if ($("categorySlug")) $("categorySlug").value = category.slug ?? "";
-    if ($("categoryImage")) $("categoryImage").value = category.image ?? "";
+  if ($("categorySlug")) {
+    $("categorySlug").value =
+      category ? String(category.id) : "";
+  }
 
-    if (formTitle) formTitle.textContent = "Editar categoria";
+  if ($("categoryImage")) {
+    $("categoryImage").value = "";
+  }
 
-    if ($("categoryPreview")) {
-      $("categoryPreview").src = category.image || "";
-      $("categoryPreview").style.display = category.image ? "block" : "none";
-    }
+  updateCategoryImagePreview(
+    editingCategoryImage
+  );
+
+  const title = $("categoryFormTitle");
+
+  if (title) {
+    title.textContent = category
+      ? "Editar categoria"
+      : "Nova categoria";
+  }
+
+  const modal = $("categoryModal");
+
+  if (modal) {
+    modal.classList.add("active");
+  }
+}
+
+function closeCategoryForm() {
+  editingCategoryId = null;
+  editingCategoryImage = "";
+
+  const modal = $("categoryModal");
+
+  if (modal) {
+    modal.classList.remove("active");
+  }
+}
+
+function updateCategoryImagePreview(image) {
+  const preview =
+    $("categoryImagePreview");
+
+  if (!preview) return;
+
+  if (image) {
+    preview.src = image;
+    preview.style.display = "block";
   } else {
-    if ($("categoryId")) $("categoryId").value = "";
-    if ($("categoryName")) $("categoryName").value = "";
-    if ($("categorySlug")) $("categorySlug").value = "";
-    if ($("categoryImage")) $("categoryImage").value = "";
-
-    if (formTitle) formTitle.textContent = "Nova categoria";
-
-    if ($("categoryPreview")) {
-      $("categoryPreview").src = "";
-      $("categoryPreview").style.display = "none";
-    }
+    preview.removeAttribute("src");
+    preview.style.display = "none";
   }
+}
 
-  formCard.style.display = "block";
-  formCard.scrollIntoView({
-    behavior: "smooth",
-    block: "start"
+function setupCategoryForm() {
+  const form = $("categoryForm");
+
+  if (!form) return;
+
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const name =
+      $("categoryName")?.value.trim() || "";
+
+    if (!name) {
+      showToast(
+        "Digite o nome da categoria.",
+        "error"
+      );
+
+      return;
+    }
+
+    let image = editingCategoryImage;
+
+    const imageInput = $("categoryImage");
+
+    if (
+      imageInput &&
+      imageInput.files &&
+      imageInput.files[0]
+    ) {
+      try {
+        image = await fileToBase64(
+          imageInput.files[0]
+        );
+      } catch (error) {
+        showToast(
+          "Erro ao carregar a imagem.",
+          "error"
+        );
+
+        return;
+      }
+    }
+
+    if (editingCategoryId !== null) {
+      const index = categories.findIndex(
+        category =>
+          String(category.id) ===
+          String(editingCategoryId)
+      );
+
+      if (index !== -1) {
+        categories[index] = {
+          ...categories[index],
+          name,
+          image
+        };
+      }
+    } else {
+      const id = createCategoryId(name);
+
+      categories.push({
+        id,
+        name,
+        image
+      });
+    }
+
+    saveLocalData();
+
+    closeCategoryForm();
+
+    renderAll();
+
+    await saveEverything();
   });
 }
 
+function createCategoryId(name) {
+  const base = slugify(name);
 
-function closeCategoryForm() {
-  const formCard = $("categoryFormCard");
+  let id = base || `categoria-${Date.now()}`;
 
-  if (formCard) {
-    formCard.style.display = "none";
+  let counter = 2;
+
+  while (
+    categories.some(
+      category =>
+        String(category.id) === String(id)
+    )
+  ) {
+    id = `${base}-${counter}`;
+    counter++;
   }
 
-  if ($("categoryForm")) {
-    $("categoryForm").reset();
-  }
-
-  if ($("categoryId")) {
-    $("categoryId").value = "";
-  }
-
-  if ($("categoryPreview")) {
-    $("categoryPreview").src = "";
-    $("categoryPreview").style.display = "none";
-  }
+  return id;
 }
 
+function slugify(text) {
+  return String(text)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
 
 function renderCategories() {
-  const container = $("categoriesEditor");
+  const container =
+    $("categoriesList") ||
+    $("categoriesGrid");
 
   if (!container) return;
 
-  container.innerHTML = "";
-
-  if (!categories.length) {
+  if (categories.length === 0) {
     container.innerHTML = `
       <div class="empty-state">
-        <p>Nenhuma categoria cadastrada.</p>
+        Nenhuma categoria cadastrada.
       </div>
     `;
+
     return;
   }
 
-  categories.forEach(category => {
-    const item = document.createElement("div");
-    item.className = "editor-item";
+  container.innerHTML = categories
+    .map(category => {
+      const image = category.image
+        ? `
+          <img
+            src="${escapeHtml(category.image)}"
+            alt="${escapeHtml(category.name)}"
+          >
+        `
+        : "";
 
-    item.innerHTML = `
-      <div class="editor-item-main">
-
-        <div class="editor-item-image">
-          ${
-            category.image
-              ? `<img src="${category.image}" alt="${escapeHtml(category.name || "Categoria")}">`
-              : `<div class="placeholder-image">📁</div>`
-          }
-        </div>
-
-        <div class="editor-item-info">
-          <strong>${escapeHtml(category.name || "Sem nome")}</strong>
-          <span>${escapeHtml(category.slug || "")}</span>
-        </div>
-
-      </div>
-
-      <div class="editor-item-actions">
-
-        <button
-          type="button"
-          class="edit-button"
-          data-edit-category="${escapeHtml(String(category.id))}"
+      return `
+        <div
+          class="category-item"
+          data-category-id="${escapeHtml(
+            String(category.id)
+          )}"
         >
-          Editar
-        </button>
 
-        <button
-          type="button"
-          class="delete-button"
-          data-delete-category="${escapeHtml(String(category.id))}"
-        >
-          Excluir
-        </button>
+          <div class="category-image">
+            ${image}
+          </div>
 
-      </div>
-    `;
+          <div class="category-info">
+            <strong>
+              ${escapeHtml(category.name)}
+            </strong>
 
-    container.appendChild(item);
-  });
+            <span>
+              ID: ${escapeHtml(
+                String(category.id)
+              )}
+            </span>
+          </div>
 
-  container.querySelectorAll("[data-edit-category]").forEach(button => {
+          <div class="category-actions">
+
+            <button
+              type="button"
+              class="edit-category"
+              data-id="${escapeHtml(
+                String(category.id)
+              )}"
+            >
+              Editar
+            </button>
+
+            <button
+              type="button"
+              class="delete-category"
+              data-id="${escapeHtml(
+                String(category.id)
+              )}"
+            >
+              Excluir
+            </button>
+
+          </div>
+
+        </div>
+      `;
+    })
+    .join("");
+
+  qsa(".edit-category").forEach(button => {
     button.addEventListener("click", () => {
-      const id = button.dataset.editCategory;
+      const id = button.dataset.id;
 
       const category = categories.find(
-        item => String(item.id) === String(id)
+        item =>
+          String(item.id) === String(id)
       );
 
       if (category) {
@@ -1407,15 +828,14 @@ function renderCategories() {
     });
   });
 
-  container.querySelectorAll("[data-delete-category]").forEach(button => {
+  qsa(".delete-category").forEach(button => {
     button.addEventListener("click", async () => {
-      const id = button.dataset.deleteCategory;
-
-      await removeCategory(id);
+      await removeCategory(
+        button.dataset.id
+      );
     });
   });
 }
-
 
 async function removeCategory(id) {
   const category = categories.find(
@@ -1425,347 +845,315 @@ async function removeCategory(id) {
   if (!category) return;
 
   const confirmed = confirm(
-    `Deseja realmente excluir a categoria "${category.name}"?`
+    `Excluir a categoria "${category.name}"?`
   );
 
   if (!confirmed) return;
 
-  const hasProducts = products.some(
-    product =>
-      String(product.category || "") === String(category.id)
-  );
+  const hasProducts =
+    products.some(
+      product =>
+        String(product.category) ===
+        String(id)
+    );
 
   if (hasProducts) {
     showToast(
       "Não é possível excluir uma categoria que possui produtos.",
       "error"
     );
+
     return;
   }
 
   categories = categories.filter(
-    item => String(item.id) !== String(id)
+    item =>
+      String(item.id) !== String(id)
   );
 
   saveLocalData();
+
   renderAll();
 
-  const result = await saveCategoriesOnline();
-
-  if (result) {
-    showToast("Categoria excluída com sucesso.", "success");
-  }
+  await saveEverything();
 }
-
 
 /* =========================================================
    PRODUTOS
-========================================================= */
+   ========================================================= */
 
 function setupProductForm() {
   const form = $("productForm");
 
-  if (!form || form.dataset.initialized === "true") {
-    return;
-  }
-
-  form.dataset.initialized = "true";
-
-  const imageInput = $("productImage");
-
-  if (imageInput) {
-    imageInput.addEventListener("input", () => {
-      updateImagePreview(
-        imageInput,
-        $("productPreview")
-      );
-    });
-
-    imageInput.addEventListener("change", () => {
-      updateImagePreview(
-        imageInput,
-        $("productPreview")
-      );
-    });
-  }
-
-  const imagesInput = $("productImages");
-
-  if (imagesInput) {
-    imagesInput.addEventListener("input", () => {
-      const firstImage = imagesInput.value
-        .split("\n")
-        .map(item => item.trim())
-        .filter(Boolean)[0];
-
-      if ($("productPreview")) {
-        $("productPreview").src = firstImage || "";
-        $("productPreview").style.display =
-          firstImage ? "block" : "none";
-      }
-    });
-  }
+  if (!form) return;
 
   form.addEventListener("submit", async event => {
     event.preventDefault();
 
-    const id = $("productId")?.value.trim();
+    const name =
+      $("productName")?.value.trim() || "";
 
-    const name = $("productName")?.value.trim() || "";
-    const category = $("productCategory")?.value.trim() || "";
-    const price = parseFloat(
-      $("productPrice")?.value || "0"
-    );
-    const oldPrice = parseFloat(
-      $("productOldPrice")?.value || "0"
-    );
-    const rating = parseFloat(
-      $("productRating")?.value || "0"
-    );
+    const category =
+      $("productCategory")?.value || "";
 
-    const status =
-      $("productStatus")?.value || "active";
+    const priceValue =
+      $("productPrice")?.value || "0";
 
-    const purchaseLink =
-      $("productPurchaseLink")?.value.trim() || "";
-
-    const descriptionTitle =
-      $("productDescriptionTitle")?.value.trim() || "";
+    const oldPriceValue =
+      $("productOldPrice")?.value || "";
 
     const description =
       $("productDescription")?.value.trim() || "";
 
-    const image =
-      $("productImage")?.value.trim() || "";
+    const descriptionTitle =
+      $("productDescriptionTitle")
+        ?.value.trim() || "";
 
-    const imagesText =
-      $("productImages")?.value || "";
+    const purchaseLink =
+      $("productPurchaseLink")
+        ?.value.trim() || "";
 
-    const images = imagesText
-      .split("\n")
-      .map(item => item.trim())
-      .filter(Boolean);
+    const featured =
+      $("productFeatured")?.checked || false;
+
+    const active =
+      $("productActive")?.checked !== false;
 
     if (!name) {
-      showToast("Digite o nome do produto.", "error");
+      showToast(
+        "Digite o nome do produto.",
+        "error"
+      );
+
       return;
     }
 
-    if (!category) {
-      showToast("Selecione uma categoria.", "error");
-      return;
+    const price =
+      Number(
+        String(priceValue)
+          .replace(",", ".")
+      ) || 0;
+
+    const oldPrice =
+      oldPriceValue === ""
+        ? null
+        : Number(
+            String(oldPriceValue)
+              .replace(",", ".")
+          ) || 0;
+
+    let image = editingProductImage;
+
+    const imageInput =
+      $("productImage");
+
+    if (
+      imageInput &&
+      imageInput.files &&
+      imageInput.files[0]
+    ) {
+      try {
+        image = await fileToBase64(
+          imageInput.files[0]
+        );
+      } catch (error) {
+        showToast(
+          "Erro ao carregar a imagem.",
+          "error"
+        );
+
+        return;
+      }
     }
 
-    if (!price || price <= 0) {
-      showToast("Digite um preço válido.", "error");
-      return;
+    let images = [];
+
+    if (image) {
+      images = [image];
     }
 
     const productData = {
-      id: id || getNextProductId(),
+      id:
+        editingProductId !== null
+          ? editingProductId
+          : getNextProductId(),
+
       name,
       category,
       price,
-      old_price: oldPrice > 0 ? oldPrice : null,
-      rating: rating > 0 ? rating : 0,
-      status,
+      oldPrice,
       image,
       images,
-      purchase_link: purchaseLink,
-      description_title: descriptionTitle,
-      description
+      description,
+      descriptionTitle,
+      purchaseLink,
+      featured,
+      active
     };
 
-    const existingIndex = products.findIndex(
-      product =>
-        String(product.id) === String(productData.id)
-    );
+    if (editingProductId !== null) {
+      const index = products.findIndex(
+        product =>
+          String(product.id) ===
+          String(editingProductId)
+      );
 
-    if (existingIndex >= 0) {
-      products[existingIndex] = productData;
+      if (index !== -1) {
+        products[index] = {
+          ...products[index],
+          ...productData
+        };
+      }
     } else {
       products.push(productData);
     }
 
     saveLocalData();
 
-    renderAll();
     closeProductForm();
 
-    const result = await saveProductsOnline();
+    renderAll();
 
-    if (result) {
-      showToast(
-        existingIndex >= 0
-          ? "Produto atualizado com sucesso."
-          : "Produto criado com sucesso.",
-        "success"
-      );
-    }
+    await saveEverything();
   });
 }
-
 
 function openProductForm(product = null) {
-  const formCard = $("productFormCard");
-  const formTitle = $("productFormTitle");
+  editingProductId = product
+    ? product.id
+    : null;
 
-  if (!formCard) return;
+  editingProductImage = product
+    ? product.image || ""
+    : "";
 
-  fillCategorySelect();
+  const form = $("productForm");
 
-  if (product) {
-    if ($("productId")) {
-      $("productId").value = product.id ?? "";
-    }
-
-    if ($("productName")) {
-      $("productName").value = product.name ?? "";
-    }
-
-    if ($("productCategory")) {
-      $("productCategory").value = product.category ?? "";
-    }
-
-    if ($("productPrice")) {
-      $("productPrice").value = product.price ?? "";
-    }
-
-    if ($("productOldPrice")) {
-      $("productOldPrice").value =
-        product.old_price ?? "";
-    }
-
-    if ($("productRating")) {
-      $("productRating").value =
-        product.rating ?? "";
-    }
-
-    if ($("productStatus")) {
-      $("productStatus").value =
-        product.status || "active";
-    }
-
-    if ($("productPurchaseLink")) {
-      $("productPurchaseLink").value =
-        product.purchase_link ?? "";
-    }
-
-    if ($("productDescriptionTitle")) {
-      $("productDescriptionTitle").value =
-        product.description_title ?? "";
-    }
-
-    if ($("productDescription")) {
-      $("productDescription").value =
-        product.description ?? "";
-    }
-
-    if ($("productImage")) {
-      $("productImage").value =
-        product.image ?? "";
-    }
-
-    if ($("productImages")) {
-      $("productImages").value =
-        Array.isArray(product.images)
-          ? product.images.join("\n")
-          : "";
-    }
-
-    if ($("productPreview")) {
-      const preview =
-        product.image ||
-        (
-          Array.isArray(product.images)
-            ? product.images[0]
-            : ""
-        ) ||
-        "";
-
-      $("productPreview").src = preview;
-
-      $("productPreview").style.display =
-        preview ? "block" : "none";
-    }
-
-    if (formTitle) {
-      formTitle.textContent = "Editar produto";
-    }
-  } else {
-    if ($("productForm")) {
-      $("productForm").reset();
-    }
-
-    if ($("productId")) {
-      $("productId").value = "";
-    }
-
-    if ($("productStatus")) {
-      $("productStatus").value = "active";
-    }
-
-    if ($("productPreview")) {
-      $("productPreview").src = "";
-      $("productPreview").style.display = "none";
-    }
-
-    if (formTitle) {
-      formTitle.textContent = "Novo produto";
-    }
+  if (form) {
+    form.reset();
   }
 
-  formCard.style.display = "block";
+  if ($("productName")) {
+    $("productName").value =
+      product?.name || "";
+  }
 
-  formCard.scrollIntoView({
-    behavior: "smooth",
-    block: "start"
-  });
+  if ($("productCategory")) {
+    $("productCategory").value =
+      product?.category || "";
+  }
+
+  if ($("productPrice")) {
+    $("productPrice").value =
+      product?.price ?? "";
+  }
+
+  if ($("productOldPrice")) {
+    $("productOldPrice").value =
+      product?.oldPrice ?? "";
+  }
+
+  if ($("productDescription")) {
+    $("productDescription").value =
+      product?.description || "";
+  }
+
+  if ($("productDescriptionTitle")) {
+    $("productDescriptionTitle").value =
+      product?.descriptionTitle || "";
+  }
+
+  if ($("productPurchaseLink")) {
+    $("productPurchaseLink").value =
+      product?.purchaseLink || "";
+  }
+
+  if ($("productFeatured")) {
+    $("productFeatured").checked =
+      Boolean(product?.featured);
+  }
+
+  if ($("productActive")) {
+    $("productActive").checked =
+      product?.active !== false;
+  }
+
+  if ($("productImage")) {
+    $("productImage").value = "";
+  }
+
+  updateProductImagePreview(
+    editingProductImage
+  );
+
+  const title =
+    $("productFormTitle");
+
+  if (title) {
+    title.textContent = product
+      ? "Editar produto"
+      : "Novo produto";
+  }
+
+  const modal =
+    $("productModal");
+
+  if (modal) {
+    modal.classList.add("active");
+  }
 }
-
 
 function closeProductForm() {
-  const formCard = $("productFormCard");
+  editingProductId = null;
+  editingProductImage = "";
 
-  if (formCard) {
-    formCard.style.display = "none";
-  }
+  const modal =
+    $("productModal");
 
-  if ($("productForm")) {
-    $("productForm").reset();
-  }
-
-  if ($("productId")) {
-    $("productId").value = "";
-  }
-
-  if ($("productStatus")) {
-    $("productStatus").value = "active";
-  }
-
-  if ($("productPreview")) {
-    $("productPreview").src = "";
-    $("productPreview").style.display = "none";
+  if (modal) {
+    modal.classList.remove("active");
   }
 }
 
+function updateProductImagePreview(image) {
+  const preview =
+    $("productImagePreview");
+
+  if (!preview) return;
+
+  if (image) {
+    preview.src = image;
+    preview.style.display = "block";
+  } else {
+    preview.removeAttribute("src");
+    preview.style.display = "none";
+  }
+}
 
 function fillCategorySelect() {
-  const select = $("productCategory");
+  const select =
+    $("productCategory");
 
   if (!select) return;
 
-  const currentValue = select.value;
+  const currentValue =
+    select.value;
 
   select.innerHTML = `
-    <option value="">Selecione uma categoria</option>
+    <option value="">
+      Selecione uma categoria
+    </option>
   `;
 
   categories.forEach(category => {
-    const option = document.createElement("option");
+    const option =
+      document.createElement("option");
 
-    option.value = category.id;
-    option.textContent = category.name;
+    option.value =
+      String(category.id);
+
+    option.textContent =
+      category.name;
 
     select.appendChild(option);
   });
@@ -1774,127 +1162,169 @@ function fillCategorySelect() {
     currentValue &&
     categories.some(
       category =>
-        String(category.id) === String(currentValue)
+        String(category.id) ===
+        String(currentValue)
     )
   ) {
     select.value = currentValue;
   }
 }
 
-
 function renderProducts() {
-  const container = $("productsEditor");
+  const container =
+    $("productsList") ||
+    $("productsGrid");
 
   if (!container) return;
 
-  container.innerHTML = "";
-
-  if (!products.length) {
+  if (products.length === 0) {
     container.innerHTML = `
       <div class="empty-state">
-        <p>Nenhum produto cadastrado.</p>
+        Nenhum produto cadastrado.
       </div>
     `;
 
     return;
   }
 
-  products.forEach(product => {
-    const item = document.createElement("div");
+  container.innerHTML = products
+    .map(product => {
+      const category =
+        categories.find(
+          item =>
+            String(item.id) ===
+            String(product.category)
+        );
 
-    item.className = "editor-item";
+      const image =
+        product.image ||
+        (
+          Array.isArray(product.images)
+            ? product.images[0]
+            : ""
+        ) ||
+        "";
 
-    const category = categories.find(
-      cat =>
-        String(cat.id) === String(product.category)
-    );
+      return `
+        <div
+          class="product-item"
+          data-product-id="${escapeHtml(
+            String(product.id)
+          )}"
+        >
 
-    const categoryName =
-      category?.name ||
-      product.category ||
-      "Sem categoria";
+          <div class="product-image">
 
-    const image =
-      product.image ||
-      (
-        Array.isArray(product.images)
-          ? product.images[0]
-          : ""
-      ) ||
-      "";
-
-    const priceNumber =
-      Number(product.price) || 0;
-
-    item.innerHTML = `
-      <div class="editor-item-main">
-
-        <div class="editor-item-image">
-          ${
-            image
-              ? `<img src="${image}" alt="${escapeHtml(product.name || "Produto")}">`
-              : `<div class="placeholder-image">🛒</div>`
-          }
-        </div>
-
-        <div class="editor-item-info">
-
-          <strong>
-            ${escapeHtml(product.name || "Sem nome")}
-          </strong>
-
-          <span>
-            ${escapeHtml(categoryName)}
-          </span>
-
-          <span>
-            R$ ${priceNumber.toFixed(2).replace(".", ",")}
-          </span>
-
-          <span>
             ${
-              product.status === "active"
-                ? "Ativo"
-                : "Inativo"
+              image
+                ? `
+                  <img
+                    src="${escapeHtml(image)}"
+                    alt="${escapeHtml(
+                      product.name
+                    )}"
+                  >
+                `
+                : `
+                  <div class="no-image">
+                    Sem imagem
+                  </div>
+                `
             }
-          </span>
+
+          </div>
+
+          <div class="product-info">
+
+            <h3>
+              ${escapeHtml(product.name)}
+            </h3>
+
+            <span class="product-category">
+              ${
+                category
+                  ? escapeHtml(category.name)
+                  : "Sem categoria"
+              }
+            </span>
+
+            <strong class="product-price">
+              ${formatCurrency(product.price)}
+            </strong>
+
+            ${
+              product.oldPrice
+                ? `
+                  <del>
+                    ${formatCurrency(
+                      product.oldPrice
+                    )}
+                  </del>
+                `
+                : ""
+            }
+
+          </div>
+
+          <div class="product-status">
+
+            <span>
+              ${
+                product.active
+                  ? "Ativo"
+                  : "Inativo"
+              }
+            </span>
+
+            ${
+              product.featured
+                ? `
+                  <span>
+                    Destaque
+                  </span>
+                `
+                : ""
+            }
+
+          </div>
+
+          <div class="product-actions">
+
+            <button
+              type="button"
+              class="edit-product"
+              data-id="${escapeHtml(
+                String(product.id)
+              )}"
+            >
+              Editar
+            </button>
+
+            <button
+              type="button"
+              class="delete-product"
+              data-id="${escapeHtml(
+                String(product.id)
+              )}"
+            >
+              Excluir
+            </button>
+
+          </div>
 
         </div>
+      `;
+    })
+    .join("");
 
-      </div>
-
-      <div class="editor-item-actions">
-
-        <button
-          type="button"
-          class="edit-button"
-          data-edit-product="${escapeHtml(String(product.id))}"
-        >
-          Editar
-        </button>
-
-        <button
-          type="button"
-          class="delete-button"
-          data-delete-product="${escapeHtml(String(product.id))}"
-        >
-          Excluir
-        </button>
-
-      </div>
-    `;
-
-    container.appendChild(item);
-  });
-
-  container.querySelectorAll("[data-edit-product]").forEach(button => {
+  qsa(".edit-product").forEach(button => {
     button.addEventListener("click", () => {
-      const id = button.dataset.editProduct;
-
-      const product = products.find(
-        item =>
-          String(item.id) === String(id)
-      );
+      const product =
+        products.find(
+          item =>
+            String(item.id) ===
+            String(button.dataset.id)
+        );
 
       if (product) {
         openProductForm(product);
@@ -1902,280 +1332,52 @@ function renderProducts() {
     });
   });
 
-  container.querySelectorAll("[data-delete-product]").forEach(button => {
+  qsa(".delete-product").forEach(button => {
     button.addEventListener("click", async () => {
-      const id = button.dataset.deleteProduct;
-
-      await removeProduct(id);
+      await removeProduct(
+        button.dataset.id
+      );
     });
   });
 }
 
-
 async function removeProduct(id) {
-  const product = products.find(
-    item =>
-      String(item.id) === String(id)
-  );
+  const product =
+    products.find(
+      item =>
+        String(item.id) ===
+        String(id)
+    );
 
   if (!product) return;
 
   const confirmed = confirm(
-    `Deseja realmente excluir o produto "${product.name}"?`
+    `Excluir o produto "${product.name}"?`
   );
 
   if (!confirmed) return;
 
   products = products.filter(
     item =>
-      String(item.id) !== String(id)
+      String(item.id) !==
+      String(id)
   );
 
   saveLocalData();
+
   renderAll();
 
-  const result = await saveProductsOnline();
-
-  if (result) {
-    showToast(
-      "Produto excluído com sucesso.",
-      "success"
-    );
-  }
+  await saveEverything();
 }
-
 
 function getNextProductId() {
   const numericIds = products
     .map(product => Number(product.id))
     .filter(id => Number.isFinite(id));
 
-  if (!numericIds.length) {
+  if (numericIds.length === 0) {
     return 1;
   }
 
   return Math.max(...numericIds) + 1;
 }
-
-
-/* =========================================================
-   SUPORTE
-========================================================= */
-
-function setupSupportForm() {
-  const form = $("supportForm");
-
-  if (!form || form.dataset.initialized === "true") {
-    return;
-  }
-
-  form.dataset.initialized = "true";
-
-  form.addEventListener("submit", async event => {
-    event.preventDefault();
-
-    config.discord =
-      $("discord")?.value.trim() || "";
-
-    config.whatsapp =
-      $("whatsapp")?.value.trim() || "";
-
-    config.tiktok =
-      $("tiktok")?.value.trim() || "";
-
-    config.instagram =
-      $("instagram")?.value.trim() || "";
-
-    saveLocalData();
-
-    const result = await saveConfigOnline();
-
-    if (result) {
-      showToast(
-        "Links de suporte salvos com sucesso.",
-        "success"
-      );
-    }
-  });
-}
-
-
-function loadSupportForm() {
-  if ($("discord")) {
-    $("discord").value =
-      config.discord || "";
-  }
-
-  if ($("whatsapp")) {
-    $("whatsapp").value =
-      config.whatsapp || "";
-  }
-
-  if ($("tiktok")) {
-    $("tiktok").value =
-      config.tiktok || "";
-  }
-
-  if ($("instagram")) {
-    $("instagram").value =
-      config.instagram || "";
-  }
-}
-
-
-/* =========================================================
-   RENDER GERAL
-========================================================= */
-
-function renderAll() {
-  renderOverview();
-
-  renderStoreForm();
-
-  renderCategories();
-
-  fillCategorySelect();
-
-  renderProducts();
-
-  loadSupportForm();
-}
-
-
-function renderOverview() {
-  if ($("overviewCategories")) {
-    $("overviewCategories").textContent =
-      categories.length;
-  }
-
-  if ($("overviewProducts")) {
-    $("overviewProducts").textContent =
-      products.length;
-  }
-
-  if ($("overviewActiveProducts")) {
-    $("overviewActiveProducts").textContent =
-      products.filter(
-        product =>
-          product.status === "active"
-      ).length;
-  }
-}
-
-
-function renderStoreForm() {
-  if ($("storeName")) {
-    $("storeName").value =
-      config.store_name || "";
-  }
-
-  if ($("storeDescription")) {
-    $("storeDescription").value =
-      config.store_description || "";
-  }
-
-  if ($("heroImage")) {
-    $("heroImage").value =
-      config.hero_image || "";
-  }
-
-  if ($("heroPreview")) {
-    if (config.hero_image) {
-      $("heroPreview").src =
-        config.hero_image;
-
-      $("heroPreview").style.display =
-        "block";
-    } else {
-      $("heroPreview").src = "";
-      $("heroPreview").style.display =
-        "none";
-    }
-  }
-}
-
-
-/* =========================================================
-   PREVIEW DE IMAGENS
-========================================================= */
-
-function updateImagePreview(input, preview) {
-  if (!input || !preview) return;
-
-  const value =
-    input.value.trim();
-
-  if (!value) {
-    preview.src = "";
-    preview.style.display = "none";
-    return;
-  }
-
-  preview.src = value;
-  preview.style.display = "block";
-
-  preview.onerror = () => {
-    preview.style.display = "none";
-  };
-}
-
-
-/* =========================================================
-   ESCAPE HTML
-========================================================= */
-
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-
-/* =========================================================
-   TOAST
-========================================================= */
-
-function showToast(message, type = "success") {
-  const toast = $("toast");
-
-  if (!toast) {
-    console.log(`[${type}] ${message}`);
-    return;
-  }
-
-  toast.textContent = message;
-
-  toast.className =
-    `toast ${type}`;
-
-  toast.classList.add("show");
-
-  clearTimeout(
-    showToast.timeout
-  );
-
-  showToast.timeout = setTimeout(() => {
-    toast.classList.remove("show");
-  }, 3000);
-}
-
-
-/* =========================================================
-   FINALIZAÇÃO
-========================================================= */
-
-window.RomaStoreDashboard = {
-  products,
-  categories,
-  config,
-
-  renderAll,
-  openProductForm,
-  closeProductForm,
-  openCategoryForm,
-  closeCategoryForm,
-  saveEverything
-};
