@@ -6,11 +6,13 @@
   <title>Dashboard — Roma Store</title>
   <link rel="stylesheet" href="dashboard.css">
 </head>
+
 <body>
 
 <div class="dashboard-layout">
 
   <aside class="sidebar">
+
     <div class="sidebar-brand">
       <span class="brand-icon">R</span>
 
@@ -21,6 +23,7 @@
     </div>
 
     <nav class="sidebar-nav">
+
       <button class="nav-button active" data-section="overview">
         Visão geral
       </button>
@@ -40,17 +43,21 @@
       <button class="nav-button" data-section="support">
         Suporte
       </button>
+
     </nav>
 
     <a class="view-store" href="index.html" target="_blank">
       Abrir loja
       <span>↗</span>
     </a>
+
   </aside>
+
 
   <main class="dashboard-main">
 
     <header class="dashboard-header">
+
       <div>
         <small>ROMA STORE</small>
         <h1 id="pageTitle">Visão geral</h1>
@@ -59,11 +66,16 @@
       <button class="save-top-button" id="saveAllButton">
         Salvar alterações
       </button>
+
     </header>
+
+
+    <!-- VISÃO GERAL -->
 
     <section class="dashboard-section active" id="section-overview">
 
       <div class="stats-grid">
+
         <div class="stat-card">
           <span>Categorias</span>
           <strong id="overviewCategories">0</strong>
@@ -78,143 +90,288 @@
           <span>Produtos ativos</span>
           <strong id="overviewActiveProducts">0</strong>
         </div>
+
       </div>
 
+
       <div class="panel-card">
+
         <div class="panel-heading">
+
           <div>
+
             <h2>Editor da loja</h2>
+
             <p>
               Altere os dados da loja, categorias, produtos e contatos.
             </p>
+
           </div>
+
         </div>
 
+
         <div class="quick-actions">
-          <button data-go-section="store">Editar loja</button>
-          <button data-go-section="categories">Gerenciar categorias</button>
-          <button data-go-section="products">Gerenciar produtos</button>
-          <button data-go-section="support">Editar suporte</button>
+
+          <button data-go-section="store">
+            Editar loja
+          </button>
+
+          <button data-go-section="categories">
+            Gerenciar categorias
+          </button>
+
+          <button data-go-section="products">
+            Gerenciar produtos
+          </button>
+
+          <button data-go-section="support">
+            Editar suporte
+          </button>
+
         </div>
+
       </div>
 
     </section>
 
+
+    <!-- LOJA -->
+
     <section class="dashboard-section" id="section-store">
 
       <div class="panel-card">
+
         <div class="panel-heading">
+
           <div>
+
             <h2>Informações da loja</h2>
-            <p>Esses dados aparecem no site principal.</p>
+
+            <p>
+              Esses dados aparecem no site principal.
+            </p>
+
           </div>
+
         </div>
+
 
         <form id="storeForm" class="form-grid">
 
           <label>
+
             Nome da loja
-            <input id="storeName" type="text" required>
+
+            <input
+              id="storeName"
+              type="text"
+              required
+            >
+
           </label>
 
+
           <label class="full">
+
             Descrição da loja
-            <textarea id="storeDescription" rows="3"></textarea>
+
+            <textarea
+              id="storeDescription"
+              rows="3"
+            ></textarea>
+
           </label>
 
+
           <label class="full">
+
             Imagem principal do banner
+
             <input
               id="heroImage"
               type="file"
               accept="image/png,image/jpeg,image/webp"
             >
+
           </label>
 
+
           <div class="image-preview full">
-            <span>Pré-visualização do banner</span>
-            <img id="heroPreview" src="" alt="Pré-visualização do banner">
+
+            <span>
+              Pré-visualização do banner
+            </span>
+
+            <img
+              id="heroPreview"
+              src=""
+              alt="Pré-visualização do banner"
+            >
+
           </div>
 
+
           <div class="form-actions full">
-            <button type="submit" class="primary-button">
+
+            <button
+              type="submit"
+              class="primary-button"
+            >
               Salvar dados da loja
             </button>
+
           </div>
 
         </form>
+
       </div>
 
     </section>
 
-    <section class="dashboard-section" id="section-categories">
+
+    <!-- CATEGORIAS -->
+
+    <section
+      class="dashboard-section"
+      id="section-categories"
+    >
 
       <div class="panel-card">
 
         <div class="panel-heading">
+
           <div>
+
             <h2>Categorias</h2>
+
             <p>
               Adicione, edite, remova e coloque imagem nas categorias.
             </p>
+
           </div>
 
-          <button class="primary-button" id="newCategoryButton">
+
+          <button
+            class="primary-button"
+            id="newCategoryButton"
+          >
             Nova categoria
           </button>
+
         </div>
 
-        <div id="categoriesEditor" class="editor-list"></div>
+
+        <div
+          id="categoriesEditor"
+          class="editor-list"
+        ></div>
 
       </div>
 
-      <div class="panel-card editor-form-card" id="categoryFormCard" hidden>
+
+      <div
+        class="panel-card editor-form-card"
+        id="categoryFormCard"
+        hidden
+      >
 
         <div class="panel-heading">
-          <h2 id="categoryFormTitle">Nova categoria</h2>
 
-          <button class="close-button" id="cancelCategoryButton">
+          <h2 id="categoryFormTitle">
+            Nova categoria
+          </h2>
+
+
+          <button
+            class="close-button"
+            id="cancelCategoryButton"
+            type="button"
+          >
             ×
           </button>
+
         </div>
 
-        <form id="categoryForm" class="form-grid">
 
-          <input id="categoryId" type="hidden">
+        <form
+          id="categoryForm"
+          class="form-grid"
+        >
+
+          <input
+            id="categoryId"
+            type="hidden"
+          >
+
 
           <label>
+
             Nome da categoria
-            <input id="categoryName" type="text" required>
+
+            <input
+              id="categoryName"
+              type="text"
+              required
+            >
+
           </label>
 
+
           <label>
+
             Identificador
+
             <input
               id="categorySlug"
               type="text"
-              placeholder="otimizacao"
-              required
+              placeholder="Opcional — gerado automaticamente"
             >
+
+            <small class="field-hint">
+              Opcional. Se deixar vazio, será gerado automaticamente.
+            </small>
+
           </label>
 
+
           <label class="full">
+
             Imagem da categoria
+
             <input
               id="categoryImage"
               type="file"
               accept="image/png,image/jpeg,image/webp"
             >
+
           </label>
 
+
           <div class="image-preview full">
-            <span>Pré-visualização da categoria</span>
-            <img id="categoryPreview" src="" alt="Pré-visualização da categoria">
+
+            <span>
+              Pré-visualização da categoria
+            </span>
+
+            <img
+              id="categoryPreview"
+              src=""
+              alt="Pré-visualização da categoria"
+            >
+
           </div>
 
+
           <div class="form-actions full">
-            <button class="primary-button" type="submit">
+
+            <button
+              class="primary-button"
+              type="submit"
+            >
               Salvar categoria
             </button>
+
 
             <button
               class="secondary-button"
@@ -223,124 +380,265 @@
             >
               Cancelar
             </button>
+
           </div>
 
         </form>
+
       </div>
 
     </section>
 
-    <section class="dashboard-section" id="section-products">
+
+    <!-- PRODUTOS -->
+
+    <section
+      class="dashboard-section"
+      id="section-products"
+    >
 
       <div class="panel-card">
 
         <div class="panel-heading">
+
           <div>
+
             <h2>Produtos</h2>
+
             <p>
               Edite nome, categoria, preços, imagens, descrição e link de compra.
             </p>
+
           </div>
 
-          <button class="primary-button" id="newProductButton">
+
+          <button
+            class="primary-button"
+            id="newProductButton"
+          >
             Novo produto
           </button>
+
         </div>
 
-        <div id="productsEditor" class="editor-list"></div>
+
+        <div
+          id="productsEditor"
+          class="editor-list"
+        ></div>
 
       </div>
 
-      <div class="panel-card editor-form-card" id="productFormCard" hidden>
+
+      <div
+        class="panel-card editor-form-card"
+        id="productFormCard"
+        hidden
+      >
 
         <div class="panel-heading">
-          <h2 id="productFormTitle">Novo produto</h2>
 
-          <button class="close-button" id="cancelProductButton">
+          <h2 id="productFormTitle">
+            Novo produto
+          </h2>
+
+
+          <button
+            class="close-button"
+            id="cancelProductButton"
+            type="button"
+          >
             ×
           </button>
+
         </div>
 
-        <form id="productForm" class="form-grid">
 
-          <input id="productId" type="hidden">
+        <form
+          id="productForm"
+          class="form-grid"
+        >
+
+          <input
+            id="productId"
+            type="hidden"
+          >
+
 
           <label>
+
             Nome do produto
-            <input id="productName" type="text" required>
+
+            <input
+              id="productName"
+              type="text"
+              required
+            >
+
           </label>
 
+
           <label>
+
             Categoria
-            <select id="productCategory" required></select>
+
+            <select
+              id="productCategory"
+              required
+            ></select>
+
           </label>
 
+
           <label>
+
             Preço atual
-            <input id="productPrice" type="number" min="0" step="0.01" required>
+
+            <input
+              id="productPrice"
+              type="number"
+              min="0"
+              step="0.01"
+              required
+            >
+
           </label>
 
+
           <label>
+
             Preço antigo
-            <input id="productOldPrice" type="number" min="0" step="0.01">
+
+            <input
+              id="productOldPrice"
+              type="number"
+              min="0"
+              step="0.01"
+            >
+
           </label>
 
+
           <label>
+
             Avaliação
-            <input id="productRating" type="text" value="5.0">
+
+            <input
+              id="productRating"
+              type="text"
+              value="5.0"
+            >
+
           </label>
 
+
           <label>
+
             Status
+
             <select id="productStatus">
-              <option value="active">Ativo</option>
-              <option value="inactive">Inativo</option>
+
+              <option value="active">
+                Ativo
+              </option>
+
+              <option value="inactive">
+                Inativo
+              </option>
+
             </select>
+
           </label>
+
 
           <label class="full">
+
             Imagem principal do produto
+
             <input
               id="productImage"
               type="file"
               accept="image/png,image/jpeg,image/webp"
             >
+
           </label>
 
+
           <label class="full">
+
             Imagens adicionais do carrossel
+
             <input
               id="productImages"
               type="file"
               accept="image/png,image/jpeg,image/webp"
               multiple
             >
+
           </label>
+
 
           <div class="image-preview full">
-            <span>Pré-visualização da imagem principal</span>
-            <img id="productPreview" src="" alt="Pré-visualização do produto">
+
+            <span>
+              Pré-visualização da imagem principal
+            </span>
+
+            <img
+              id="productPreview"
+              src=""
+              alt="Pré-visualização do produto"
+            >
+
           </div>
 
+
           <label class="full">
+
             Link de compra
-            <input id="productPurchaseLink" type="url" placeholder="https://...">
+
+            <input
+              id="productPurchaseLink"
+              type="url"
+              placeholder="https://..."
+            >
+
           </label>
 
+
           <label class="full">
+
             Título da descrição
-            <input id="productDescriptionTitle" type="text">
+
+            <input
+              id="productDescriptionTitle"
+              type="text"
+            >
+
           </label>
 
+
           <label class="full">
+
             Descrição completa
-            <textarea id="productDescription" rows="7"></textarea>
+
+            <textarea
+              id="productDescription"
+              rows="7"
+            ></textarea>
+
           </label>
+
 
           <div class="form-actions full">
-            <button class="primary-button" type="submit">
+
+            <button
+              class="primary-button"
+              type="submit"
+            >
               Salvar produto
             </button>
+
 
             <button
               class="secondary-button"
@@ -349,77 +647,161 @@
             >
               Cancelar
             </button>
+
           </div>
 
         </form>
+
       </div>
 
     </section>
 
-    <section class="dashboard-section" id="section-support">
+
+    <!-- SUPORTE -->
+
+    <section
+      class="dashboard-section"
+      id="section-support"
+    >
 
       <div class="panel-card">
 
         <div class="panel-heading">
+
           <div>
+
             <h2>Redes e suporte</h2>
+
             <p>
               Edite os links que aparecem no painel de suporte da loja.
             </p>
+
           </div>
+
         </div>
 
-        <form id="supportForm" class="support-form">
+
+        <form
+          id="supportForm"
+          class="support-form"
+        >
 
           <label class="support-field">
+
             <span>
-              <img src="https://cdn.simpleicons.org/discord/ffffff" alt="Discord">
+
+              <img
+                src="https://cdn.simpleicons.org/discord/ffffff"
+                alt="Discord"
+              >
+
               Discord
+
             </span>
 
-            <input id="discord" type="url" required>
+
+            <input
+              id="discord"
+              type="url"
+              required
+            >
+
           </label>
 
+
           <label class="support-field">
+
             <span>
-              <img src="https://cdn.simpleicons.org/whatsapp/ffffff" alt="WhatsApp">
+
+              <img
+                src="https://cdn.simpleicons.org/whatsapp/ffffff"
+                alt="WhatsApp"
+              >
+
               WhatsApp
+
             </span>
 
-            <input id="whatsapp" type="url" required>
+
+            <input
+              id="whatsapp"
+              type="url"
+              required
+            >
+
           </label>
 
+
           <label class="support-field">
+
             <span>
-              <img src="https://cdn.simpleicons.org/tiktok/ffffff" alt="TikTok">
+
+              <img
+                src="https://cdn.simpleicons.org/tiktok/ffffff"
+                alt="TikTok"
+              >
+
               TikTok
+
             </span>
 
-            <input id="tiktok" type="url" required>
+
+            <input
+              id="tiktok"
+              type="url"
+              required
+            >
+
           </label>
+
 
           <label class="support-field">
+
             <span>
-              <img src="https://cdn.simpleicons.org/instagram/ffffff" alt="Instagram">
+
+              <img
+                src="https://cdn.simpleicons.org/instagram/ffffff"
+                alt="Instagram"
+              >
+
               Instagram
+
             </span>
 
-            <input id="instagram" type="url" required>
+
+            <input
+              id="instagram"
+              type="url"
+              required
+            >
+
           </label>
 
-          <button class="primary-button" type="submit">
+
+          <button
+            class="primary-button"
+            type="submit"
+          >
             Salvar links de suporte
           </button>
 
         </form>
+
       </div>
 
     </section>
 
-    <div class="toast" id="toast" role="status"></div>
+
+    <div
+      class="toast"
+      id="toast"
+      role="status"
+    ></div>
 
   </main>
+
 </div>
+
 
 <script src="dashboard.js"></script>
 
