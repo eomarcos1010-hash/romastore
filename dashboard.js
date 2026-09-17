@@ -27,19 +27,16 @@ const defaultCategories = [
     name: "Otimização",
     image: ""
   },
-
   {
     id: "windows",
     name: "Windows",
     image: ""
   },
-
   {
     id: "personalizacao",
     name: "Personalização",
     image: ""
   },
-
   {
     id: "ferramentas",
     name: "Ferramentas",
@@ -68,24 +65,55 @@ function clone(value) {
 
 
 function load(key, fallback) {
+
   try {
+
     const saved = localStorage.getItem(key);
 
-    return saved
-      ? JSON.parse(saved)
-      : clone(fallback);
+    if (!saved) {
+      return clone(fallback);
+    }
 
-  } catch {
+    const parsed = JSON.parse(saved);
+
+    return parsed;
+
+  } catch (error) {
+
+    console.error(
+      `Erro ao carregar ${key}:`,
+      error
+    );
+
     return clone(fallback);
   }
 }
 
 
 function save(key, value) {
-  localStorage.setItem(
-    key,
-    JSON.stringify(value)
-  );
+
+  try {
+
+    localStorage.setItem(
+      key,
+      JSON.stringify(value)
+    );
+
+    return true;
+
+  } catch (error) {
+
+    console.error(
+      `Erro ao salvar ${key}:`,
+      error
+    );
+
+    showToast(
+      "Não foi possível salvar os dados."
+    );
+
+    return false;
+  }
 }
 
 
@@ -117,23 +145,9 @@ function readFileAsDataURL(file) {
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| IDENTIFICADORES
-|--------------------------------------------------------------------------
-|
-| O identificador agora é OPCIONAL.
-|
-| Se o usuário deixar vazio:
-| "Minha Categoria" -> "minha-categoria"
-|
-| Se já existir:
-| "minha-categoria"
-| "minha-categoria-2"
-| "minha-categoria-3"
-|
-*/
-
+/* =========================================================
+   IDENTIFICADOR AUTOMÁTICO
+   ========================================================= */
 
 function normalizeId(value) {
 
@@ -147,10 +161,7 @@ function normalizeId(value) {
 }
 
 
-function generateCategoryId(
-  name,
-  currentId = ""
-) {
+function generateCategoryId(name, currentId = "") {
 
   let baseId = normalizeId(name);
 
@@ -159,19 +170,19 @@ function generateCategoryId(
   }
 
   let id = baseId;
-  let counter = 2;
+  let number = 2;
 
 
   while (
     categories.some(category =>
-      category.id === id &&
-      category.id !== currentId
+      String(category.id) === String(id) &&
+      String(category.id) !== String(currentId)
     )
   ) {
 
-    id = `${baseId}-${counter}`;
+    id = `${baseId}-${number}`;
 
-    counter++;
+    number++;
 
   }
 
@@ -180,6 +191,10 @@ function generateCategoryId(
 
 }
 
+
+/* =========================================================
+   SEGURANÇA HTML
+   ========================================================= */
 
 function escapeHTML(value) {
 
@@ -202,12 +217,9 @@ function escapeAttribute(value) {
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| DADOS
-|--------------------------------------------------------------------------
-*/
-
+/* =========================================================
+   DADOS
+   ========================================================= */
 
 let products = load(
   PRODUCTS_KEY,
@@ -230,12 +242,9 @@ let config = {
 };
 
 
-/*
-|--------------------------------------------------------------------------
-| INICIALIZAÇÃO
-|--------------------------------------------------------------------------
-*/
-
+/* =========================================================
+   INICIALIZAÇÃO
+   ========================================================= */
 
 document.addEventListener(
   "DOMContentLoaded",
@@ -259,12 +268,9 @@ document.addEventListener(
 );
 
 
-/*
-|--------------------------------------------------------------------------
-| NAVEGAÇÃO
-|--------------------------------------------------------------------------
-*/
-
+/* =========================================================
+   NAVEGAÇÃO
+   ========================================================= */
 
 function setupNavigation() {
 
@@ -343,69 +349,96 @@ function showSection(section) {
   };
 
 
-  $("pageTitle").textContent =
-    titles[section] || "Dashboard";
+  const pageTitle = $("pageTitle");
+
+  if (pageTitle) {
+
+    pageTitle.textContent =
+      titles[section] || "Dashboard";
+
+  }
 
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| VISÃO GERAL
-|--------------------------------------------------------------------------
-*/
-
+/* =========================================================
+   VISÃO GERAL
+   ========================================================= */
 
 function setupOverview() {
 
-  $("saveAllButton")
-    .addEventListener(
-      "click",
-      () => {
+  const saveButton =
+    $("saveAllButton");
 
-        saveEverything();
+  if (!saveButton) return;
 
-        showToast(
-          "Todas as alterações foram salvas."
-        );
 
-      }
-    );
+  saveButton.addEventListener(
+    "click",
+    () => {
+
+      saveEverything();
+
+      showToast(
+        "Todas as alterações foram salvas."
+      );
+
+    }
+  );
 
 }
 
 
 function updateOverview() {
 
-  $("overviewCategories")
-    .textContent = categories.length;
+  const categoriesElement =
+    $("overviewCategories");
+
+  const productsElement =
+    $("overviewProducts");
+
+  const activeProductsElement =
+    $("overviewActiveProducts");
 
 
-  $("overviewProducts")
-    .textContent = products.length;
+  if (categoriesElement) {
+    categoriesElement.textContent =
+      categories.length;
+  }
 
 
-  $("overviewActiveProducts")
-    .textContent =
+  if (productsElement) {
+    productsElement.textContent =
+      products.length;
+  }
+
+
+  if (activeProductsElement) {
+
+    activeProductsElement.textContent =
       products.filter(
         product =>
           product.status !== "inactive"
       ).length;
 
+  }
+
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| LOJA
-|--------------------------------------------------------------------------
-*/
-
+/* =========================================================
+   LOJA
+   ========================================================= */
 
 function setupStoreForm() {
 
-  $("heroImage")
-    .addEventListener(
+  const heroInput =
+    $("heroImage");
+
+
+  if (heroInput) {
+
+    heroInput.addEventListener(
       "change",
       async event => {
 
@@ -420,12 +453,17 @@ function setupStoreForm() {
           const image =
             await readFileAsDataURL(file);
 
-          $("heroPreview").src = image;
+
+          $("heroPreview").src =
+            image;
+
 
           $("heroPreview").style.display =
             "block";
 
-        } catch {
+        } catch (error) {
+
+          console.error(error);
 
           showToast(
             "Não foi possível carregar o banner."
@@ -436,14 +474,23 @@ function setupStoreForm() {
       }
     );
 
+  }
 
-  $("storeForm")
-    .addEventListener(
-      "submit",
-      async event => {
 
-        event.preventDefault();
+  const storeForm =
+    $("storeForm");
 
+  if (!storeForm) return;
+
+
+  storeForm.addEventListener(
+    "submit",
+    async event => {
+
+      event.preventDefault();
+
+
+      try {
 
         const file =
           $("heroImage").files[0];
@@ -479,13 +526,26 @@ function setupStoreForm() {
           "Dados da loja salvos."
         );
 
+      } catch (error) {
+
+        console.error(error);
+
+        showToast(
+          "Erro ao salvar os dados da loja."
+        );
+
       }
-    );
+
+    }
+  );
 
 }
 
 
 function loadStoreForm() {
+
+  if (!$("storeName")) return;
+
 
   $("storeName").value =
     config.storeName || "";
@@ -507,17 +567,19 @@ function loadStoreForm() {
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| CATEGORIAS
-|--------------------------------------------------------------------------
-*/
-
+/* =========================================================
+   CATEGORIAS
+   ========================================================= */
 
 function setupCategoryForm() {
 
-  $("newCategoryButton")
-    .addEventListener(
+  const newButton =
+    $("newCategoryButton");
+
+
+  if (newButton) {
+
+    newButton.addEventListener(
       "click",
       () => {
 
@@ -526,23 +588,44 @@ function setupCategoryForm() {
       }
     );
 
+  }
 
-  $("cancelCategoryButton")
-    .addEventListener(
+
+  const cancelButton =
+    $("cancelCategoryButton");
+
+
+  if (cancelButton) {
+
+    cancelButton.addEventListener(
       "click",
       closeCategoryForm
     );
 
+  }
 
-  $("cancelCategoryButtonBottom")
-    .addEventListener(
+
+  const cancelBottom =
+    $("cancelCategoryButtonBottom");
+
+
+  if (cancelBottom) {
+
+    cancelBottom.addEventListener(
       "click",
       closeCategoryForm
     );
 
+  }
 
-  $("categoryImage")
-    .addEventListener(
+
+  const imageInput =
+    $("categoryImage");
+
+
+  if (imageInput) {
+
+    imageInput.addEventListener(
       "change",
       async event => {
 
@@ -562,15 +645,15 @@ function setupCategoryForm() {
             image;
 
 
-          $("categoryPreview")
-            .style
-            .display = "block";
+          $("categoryPreview").style.display =
+            "block";
 
+        } catch (error) {
 
-        } catch {
+          console.error(error);
 
           showToast(
-            "Não foi possível carregar a imagem da categoria."
+            "Não foi possível carregar a imagem."
           );
 
         }
@@ -578,18 +661,24 @@ function setupCategoryForm() {
       }
     );
 
+  }
 
-  /*
-   * SALVAR CATEGORIA
-   */
 
-  $("categoryForm")
-    .addEventListener(
-      "submit",
-      async event => {
+  const categoryForm =
+    $("categoryForm");
 
-        event.preventDefault();
 
+  if (!categoryForm) return;
+
+
+  categoryForm.addEventListener(
+    "submit",
+    async event => {
+
+      event.preventDefault();
+
+
+      try {
 
         const name =
           $("categoryName")
@@ -597,15 +686,10 @@ function setupCategoryForm() {
             .trim();
 
 
-        const manualId =
-          $("categorySlug")
-            .value
-            .trim();
-
-
         const oldId =
           $("categoryId")
-            .value;
+            .value
+            .trim();
 
 
         const file =
@@ -613,9 +697,9 @@ function setupCategoryForm() {
             .files[0];
 
 
-        /*
-         * SOMENTE O NOME É OBRIGATÓRIO.
-         */
+        /* ============================================
+           SOMENTE O NOME É NECESSÁRIO
+           ============================================ */
 
         if (!name) {
 
@@ -630,61 +714,40 @@ function setupCategoryForm() {
         }
 
 
-        /*
-         * IDENTIFICADOR MANUAL
-         *
-         * Se o usuário colocou um:
-         * usa ele.
-         *
-         * Se deixou vazio:
-         * gera automaticamente pelo nome.
-         */
+        /* ============================================
+           CRIA ID AUTOMATICAMENTE
+           ============================================ */
 
-        let id =
-          normalizeId(manualId);
+        let id;
 
 
-        if (!id) {
+        if (oldId) {
 
-          id =
-            generateCategoryId(
-              name,
-              oldId
-            );
+          /*
+           * Estamos editando.
+           * Mantém o ID antigo.
+           */
+
+          id = oldId;
 
         } else {
 
           /*
-           * Se o ID informado já existe,
-           * NÃO bloqueia a criação.
-           *
-           * Gera outro automaticamente.
+           * Estamos criando.
+           * Gera automaticamente.
            */
 
-          const duplicate =
-            categories.some(
-              category =>
-                category.id === id &&
-                category.id !== oldId
+          id =
+            generateCategoryId(
+              name
             );
-
-
-          if (duplicate) {
-
-            id =
-              generateCategoryId(
-                id,
-                oldId
-              );
-
-          }
 
         }
 
 
-        /*
-         * IMAGEM
-         */
+        /* ============================================
+           IMAGEM
+           ============================================ */
 
         let image = "";
 
@@ -699,78 +762,66 @@ function setupCategoryForm() {
           const oldCategory =
             categories.find(
               category =>
-                category.id === oldId
+                String(category.id) ===
+                String(oldId)
             );
 
 
-          image =
-            oldCategory?.image || "";
+          if (oldCategory) {
+
+            image =
+              oldCategory.image || "";
+
+          }
 
         }
 
 
-        /*
-         * Se o identificador mudou,
-         * atualiza os produtos vinculados
-         * ao identificador antigo.
-         */
-
-        if (
-          oldId &&
-          oldId !== id
-        ) {
-
-          products.forEach(
-            product => {
-
-              if (
-                product.category === oldId
-              ) {
-
-                product.category = id;
-
-              }
-
-            }
-          );
-
-        }
-
-
-        /*
-         * NOVA CATEGORIA
-         */
+        /* ============================================
+           OBJETO DA CATEGORIA
+           ============================================ */
 
         const category = {
 
-          id,
-          name,
-          image
+          id: id,
+
+          name: name,
+
+          image: image
 
         };
 
 
-        const index =
+        /* ============================================
+           PROCURAR CATEGORIA EXISTENTE
+           ============================================ */
+
+        const existingIndex =
           categories.findIndex(
             item =>
-              item.id === oldId
+              String(item.id) ===
+              String(oldId)
           );
 
 
-        /*
-         * EDITAR
-         */
+        /* ============================================
+           EDITAR
+           ============================================ */
 
-        if (index >= 0) {
+        if (
+          oldId &&
+          existingIndex >= 0
+        ) {
 
-          categories[index] =
+          categories[existingIndex] =
             category;
 
         }
 
-        /*
-         * CRIAR
-         */
+
+        /* ============================================
+           CRIAR
+           ============================================ */
 
         else {
 
@@ -781,25 +832,59 @@ function setupCategoryForm() {
         }
 
 
-        /*
-         * SALVAR
-         */
+        /* ============================================
+           SALVAR
+           ============================================ */
 
-        save(
-          CATEGORIES_KEY,
-          categories
-        );
-
-
-        save(
-          PRODUCTS_KEY,
-          products
-        );
+        const saved =
+          save(
+            CATEGORIES_KEY,
+            categories
+          );
 
 
-        /*
-         * ATUALIZAR DASHBOARD
-         */
+        if (!saved) {
+          return;
+        }
+
+
+        /* ============================================
+           ATUALIZAR PRODUTOS SE NECESSÁRIO
+           ============================================ */
+
+        if (
+          oldId &&
+          oldId !== id
+        ) {
+
+          products.forEach(
+            product => {
+
+              if (
+                String(product.category) ===
+                String(oldId)
+              ) {
+
+                product.category =
+                  id;
+
+              }
+
+            }
+          );
+
+
+          save(
+            PRODUCTS_KEY,
+            products
+          );
+
+        }
+
+
+        /* ============================================
+           ATUALIZA TELA
+           ============================================ */
 
         renderAll();
 
@@ -808,31 +893,60 @@ function setupCategoryForm() {
 
 
         showToast(
-          "Categoria salva com sucesso."
+          oldId
+            ? "Categoria atualizada com sucesso."
+            : "Categoria criada com sucesso."
+        );
+
+
+        console.log(
+          "Categoria salva:",
+          category
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "ERRO AO CRIAR CATEGORIA:",
+          error
+        );
+
+
+        showToast(
+          "Erro ao criar a categoria. Veja o console."
         );
 
       }
-    );
+
+    }
+  );
 
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| ABRIR FORMULÁRIO DE CATEGORIA
-|--------------------------------------------------------------------------
-*/
+/* =========================================================
+   ABRIR FORMULÁRIO DE CATEGORIA
+   ========================================================= */
+
+function openCategoryForm(category = null) {
+
+  const formCard =
+    $("categoryFormCard");
 
 
-function openCategoryForm(
-  category = null
-) {
+  const form =
+    $("categoryForm");
 
-  $("categoryFormCard").hidden =
+
+  if (!formCard || !form) return;
+
+
+  formCard.hidden =
     false;
 
 
-  $("categoryForm").reset();
+  form.reset();
 
 
   if (category) {
@@ -847,11 +961,7 @@ function openCategoryForm(
 
 
     $("categoryName").value =
-      category.name;
-
-
-    $("categorySlug").value =
-      category.id;
+      category.name || "";
 
 
     $("categoryPreview").src =
@@ -874,10 +984,6 @@ function openCategoryForm(
       "";
 
 
-    $("categorySlug").value =
-      "";
-
-
     $("categoryPreview")
       .removeAttribute("src");
 
@@ -888,29 +994,48 @@ function openCategoryForm(
   }
 
 
-  $("categoryFormCard")
-    .scrollIntoView({
-      behavior: "smooth",
-      block: "start"
-    });
+  formCard.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+
+
+  setTimeout(
+    () => {
+
+      $("categoryName").focus();
+
+    },
+    300
+  );
 
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| FECHAR FORMULÁRIO DE CATEGORIA
-|--------------------------------------------------------------------------
-*/
-
+/* =========================================================
+   FECHAR FORMULÁRIO DE CATEGORIA
+   ========================================================= */
 
 function closeCategoryForm() {
 
-  $("categoryFormCard").hidden =
+  const formCard =
+    $("categoryFormCard");
+
+
+  const form =
+    $("categoryForm");
+
+
+  if (!formCard) return;
+
+
+  formCard.hidden =
     true;
 
 
-  $("categoryForm").reset();
+  if (form) {
+    form.reset();
+  }
 
 
   $("categoryId").value =
@@ -927,17 +1052,17 @@ function closeCategoryForm() {
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| RENDERIZAR CATEGORIAS
-|--------------------------------------------------------------------------
-*/
-
+/* =========================================================
+   RENDERIZAR CATEGORIAS
+   ========================================================= */
 
 function renderCategories() {
 
   const container =
     $("categoriesEditor");
+
+
+  if (!container) return;
 
 
   container.innerHTML =
@@ -947,11 +1072,9 @@ function renderCategories() {
   if (!categories.length) {
 
     container.innerHTML = `
-
       <div class="empty-editor">
         Nenhuma categoria cadastrada.
       </div>
-
     `;
 
     return;
@@ -980,25 +1103,15 @@ function renderCategories() {
             category.image
 
               ? `
-
                 <img
                   class="editor-item-image"
-                  src="${escapeAttribute(
-                    category.image
-                  )}"
-                  alt="${escapeAttribute(
-                    category.name
-                  )}"
+                  src="${escapeAttribute(category.image)}"
+                  alt="${escapeAttribute(category.name)}"
                 >
-
               `
 
               : `
-
-                <div
-                  class="editor-item-image"
-                ></div>
-
+                <div class="editor-item-image"></div>
               `
           }
 
@@ -1006,16 +1119,12 @@ function renderCategories() {
           <div>
 
             <h3>
-              ${escapeHTML(
-                category.name
-              )}
+              ${escapeHTML(category.name)}
             </h3>
 
             <p>
-              ID:
-              ${escapeHTML(
-                category.id
-              )}
+              Identificador interno:
+              ${escapeHTML(category.id)}
             </p>
 
           </div>
@@ -1025,12 +1134,16 @@ function renderCategories() {
 
         <div class="editor-actions">
 
-          <button data-action="edit">
+          <button
+            type="button"
+            data-action="edit"
+          >
             Editar
           </button>
 
 
           <button
+            type="button"
             class="delete-button"
             data-action="delete"
           >
@@ -1042,36 +1155,40 @@ function renderCategories() {
       `;
 
 
-      item
-        .querySelector(
+      const editButton =
+        item.querySelector(
           '[data-action="edit"]'
-        )
-        .addEventListener(
-          "click",
-          () => {
-
-            openCategoryForm(
-              category
-            );
-
-          }
         );
 
 
-      item
-        .querySelector(
+      const deleteButton =
+        item.querySelector(
           '[data-action="delete"]'
-        )
-        .addEventListener(
-          "click",
-          () => {
-
-            removeCategory(
-              category.id
-            );
-
-          }
         );
+
+
+      editButton.addEventListener(
+        "click",
+        () => {
+
+          openCategoryForm(
+            category
+          );
+
+        }
+      );
+
+
+      deleteButton.addEventListener(
+        "click",
+        () => {
+
+          removeCategory(
+            category.id
+          );
+
+        }
+      );
 
 
       container.appendChild(
@@ -1084,19 +1201,17 @@ function renderCategories() {
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| REMOVER CATEGORIA
-|--------------------------------------------------------------------------
-*/
-
+/* =========================================================
+   REMOVER CATEGORIA
+   ========================================================= */
 
 function removeCategory(id) {
 
   const hasProducts =
     products.some(
       product =>
-        product.category === id
+        String(product.category) ===
+        String(id)
     );
 
 
@@ -1111,21 +1226,22 @@ function removeCategory(id) {
   }
 
 
-  if (
-    !confirm(
+  const confirmed =
+    confirm(
       "Deseja remover esta categoria?"
-    )
-  ) {
+    );
 
+
+  if (!confirmed) {
     return;
-
   }
 
 
   categories =
     categories.filter(
       category =>
-        category.id !== id
+        String(category.id) !==
+        String(id)
     );
 
 
@@ -1145,17 +1261,19 @@ function removeCategory(id) {
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| PRODUTOS
-|--------------------------------------------------------------------------
-*/
-
+/* =========================================================
+   PRODUTOS
+   ========================================================= */
 
 function setupProductForm() {
 
-  $("newProductButton")
-    .addEventListener(
+  const newButton =
+    $("newProductButton");
+
+
+  if (newButton) {
+
+    newButton.addEventListener(
       "click",
       () => {
 
@@ -1164,29 +1282,49 @@ function setupProductForm() {
       }
     );
 
+  }
 
-  $("cancelProductButton")
-    .addEventListener(
+
+  const cancelButton =
+    $("cancelProductButton");
+
+
+  if (cancelButton) {
+
+    cancelButton.addEventListener(
       "click",
       closeProductForm
     );
 
+  }
 
-  $("cancelProductButtonBottom")
-    .addEventListener(
+
+  const cancelBottom =
+    $("cancelProductButtonBottom");
+
+
+  if (cancelBottom) {
+
+    cancelBottom.addEventListener(
       "click",
       closeProductForm
     );
 
+  }
 
-  $("productImage")
-    .addEventListener(
+
+  const imageInput =
+    $("productImage");
+
+
+  if (imageInput) {
+
+    imageInput.addEventListener(
       "change",
       async event => {
 
         const file =
           event.target.files[0];
-
 
         if (!file) return;
 
@@ -1204,10 +1342,12 @@ function setupProductForm() {
           $("productPreview").style.display =
             "block";
 
-        } catch {
+        } catch (error) {
+
+          console.error(error);
 
           showToast(
-            "Não foi possível carregar a imagem do produto."
+            "Não foi possível carregar a imagem."
           );
 
         }
@@ -1215,14 +1355,24 @@ function setupProductForm() {
       }
     );
 
+  }
 
-  $("productForm")
-    .addEventListener(
-      "submit",
-      async event => {
 
-        event.preventDefault();
+  const productForm =
+    $("productForm");
 
+
+  if (!productForm) return;
+
+
+  productForm.addEventListener(
+    "submit",
+    async event => {
+
+      event.preventDefault();
+
+
+      try {
 
         const name =
           $("productName")
@@ -1291,9 +1441,7 @@ function setupProductForm() {
           [];
 
 
-        if (
-          additionalFiles.length
-        ) {
+        if (additionalFiles.length) {
 
           images =
             await Promise.all(
@@ -1399,31 +1547,50 @@ function setupProductForm() {
           "Produto salvo."
         );
 
+      } catch (error) {
+
+        console.error(
+          "Erro ao salvar produto:",
+          error
+        );
+
+        showToast(
+          "Erro ao salvar produto."
+        );
+
       }
-    );
+
+    }
+  );
 
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| ABRIR PRODUTO
-|--------------------------------------------------------------------------
-*/
+/* =========================================================
+   ABRIR PRODUTO
+   ========================================================= */
+
+function openProductForm(product = null) {
+
+  const card =
+    $("productFormCard");
 
 
-function openProductForm(
-  product = null
-) {
+  const form =
+    $("productForm");
 
-  $("productFormCard").hidden =
+
+  if (!card || !form) return;
+
+
+  card.hidden =
     false;
 
 
   fillCategorySelect();
 
 
-  $("productForm").reset();
+  form.reset();
 
 
   if (product) {
@@ -1511,29 +1678,38 @@ function openProductForm(
   }
 
 
-  $("productFormCard")
-    .scrollIntoView({
-      behavior: "smooth",
-      block: "start"
-    });
+  card.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
 
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| FECHAR PRODUTO
-|--------------------------------------------------------------------------
-*/
-
+/* =========================================================
+   FECHAR PRODUTO
+   ========================================================= */
 
 function closeProductForm() {
 
-  $("productFormCard").hidden =
+  const card =
+    $("productFormCard");
+
+
+  const form =
+    $("productForm");
+
+
+  if (!card) return;
+
+
+  card.hidden =
     true;
 
 
-  $("productForm").reset();
+  if (form) {
+    form.reset();
+  }
 
 
   $("productId").value =
@@ -1550,12 +1726,9 @@ function closeProductForm() {
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| SELECT DE CATEGORIAS DOS PRODUTOS
-|--------------------------------------------------------------------------
-*/
-
+/* =========================================================
+   SELECT DE CATEGORIAS
+   ========================================================= */
 
 function fillCategorySelect() {
 
@@ -1563,8 +1736,37 @@ function fillCategorySelect() {
     $("productCategory");
 
 
+  if (!select) return;
+
+
   select.innerHTML =
     "";
+
+
+  if (!categories.length) {
+
+    const option =
+      document.createElement(
+        "option"
+      );
+
+
+    option.value =
+      "";
+
+
+    option.textContent =
+      "Nenhuma categoria cadastrada";
+
+
+    select.appendChild(
+      option
+    );
+
+
+    return;
+
+  }
 
 
   categories.forEach(
@@ -1594,17 +1796,17 @@ function fillCategorySelect() {
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| RENDERIZAR PRODUTOS
-|--------------------------------------------------------------------------
-*/
-
+/* =========================================================
+   RENDERIZAR PRODUTOS
+   ========================================================= */
 
 function renderProducts() {
 
   const container =
     $("productsEditor");
+
+
+  if (!container) return;
 
 
   container.innerHTML =
@@ -1614,11 +1816,9 @@ function renderProducts() {
   if (!products.length) {
 
     container.innerHTML = `
-
       <div class="empty-editor">
         Nenhum produto cadastrado.
       </div>
-
     `;
 
     return;
@@ -1632,8 +1832,8 @@ function renderProducts() {
       const category =
         categories.find(
           item =>
-            item.id ===
-            product.category
+            String(item.id) ===
+            String(product.category)
         );
 
 
@@ -1655,25 +1855,15 @@ function renderProducts() {
             product.image
 
               ? `
-
                 <img
                   class="editor-item-image"
-                  src="${escapeAttribute(
-                    product.image
-                  )}"
-                  alt="${escapeAttribute(
-                    product.name
-                  )}"
+                  src="${escapeAttribute(product.image)}"
+                  alt="${escapeAttribute(product.name)}"
                 >
-
               `
 
               : `
-
-                <div
-                  class="editor-item-image"
-                ></div>
-
+                <div class="editor-item-image"></div>
               `
           }
 
@@ -1681,9 +1871,7 @@ function renderProducts() {
           <div>
 
             <h3>
-              ${escapeHTML(
-                product.name
-              )}
+              ${escapeHTML(product.name)}
             </h3>
 
 
@@ -1696,14 +1884,12 @@ function renderProducts() {
               )}
 
               · R$
+
               ${Number(
                 product.price || 0
               )
                 .toFixed(2)
-                .replace(
-                  ".",
-                  ","
-                )}
+                .replace(".", ",")}
 
             </p>
 
@@ -1714,12 +1900,16 @@ function renderProducts() {
 
         <div class="editor-actions">
 
-          <button data-action="edit">
+          <button
+            type="button"
+            data-action="edit"
+          >
             Editar
           </button>
 
 
           <button
+            type="button"
             class="delete-button"
             data-action="delete"
           >
@@ -1773,12 +1963,9 @@ function renderProducts() {
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| REMOVER PRODUTO
-|--------------------------------------------------------------------------
-*/
-
+/* =========================================================
+   REMOVER PRODUTO
+   ========================================================= */
 
 function removeProduct(id) {
 
@@ -1816,12 +2003,9 @@ function removeProduct(id) {
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| PRÓXIMO ID DO PRODUTO
-|--------------------------------------------------------------------------
-*/
-
+/* =========================================================
+   PRÓXIMO ID
+   ========================================================= */
 
 function getNextProductId() {
 
@@ -1840,64 +2024,70 @@ function getNextProductId() {
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| SUPORTE
-|--------------------------------------------------------------------------
-*/
-
+/* =========================================================
+   SUPORTE
+   ========================================================= */
 
 function setupSupportForm() {
 
-  $("supportForm")
-    .addEventListener(
-      "submit",
-      event => {
-
-        event.preventDefault();
+  const form =
+    $("supportForm");
 
 
-        config.discord =
-          $("discord")
-            .value
-            .trim();
+  if (!form) return;
 
 
-        config.whatsapp =
-          $("whatsapp")
-            .value
-            .trim();
+  form.addEventListener(
+    "submit",
+    event => {
+
+      event.preventDefault();
 
 
-        config.tiktok =
-          $("tiktok")
-            .value
-            .trim();
+      config.discord =
+        $("discord")
+          .value
+          .trim();
 
 
-        config.instagram =
-          $("instagram")
-            .value
-            .trim();
+      config.whatsapp =
+        $("whatsapp")
+          .value
+          .trim();
 
 
-        save(
-          CONFIG_KEY,
-          config
-        );
+      config.tiktok =
+        $("tiktok")
+          .value
+          .trim();
 
 
-        showToast(
-          "Links de suporte salvos."
-        );
+      config.instagram =
+        $("instagram")
+          .value
+          .trim();
 
-      }
-    );
+
+      save(
+        CONFIG_KEY,
+        config
+      );
+
+
+      showToast(
+        "Links de suporte salvos."
+      );
+
+    }
+  );
 
 }
 
 
 function loadSupportForm() {
+
+  if (!$("discord")) return;
+
 
   $("discord").value =
     config.discord || "";
@@ -1917,12 +2107,9 @@ function loadSupportForm() {
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| SALVAR TUDO
-|--------------------------------------------------------------------------
-*/
-
+/* =========================================================
+   SALVAR TUDO
+   ========================================================= */
 
 function saveEverything() {
 
@@ -1946,12 +2133,9 @@ function saveEverything() {
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| RENDERIZAR TUDO
-|--------------------------------------------------------------------------
-*/
-
+/* =========================================================
+   RENDERIZAR TUDO
+   ========================================================= */
 
 function renderAll() {
 
@@ -1970,17 +2154,23 @@ function renderAll() {
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| TOAST
-|--------------------------------------------------------------------------
-*/
-
+/* =========================================================
+   TOAST
+   ========================================================= */
 
 function showToast(message) {
 
   const toast =
     $("toast");
+
+
+  if (!toast) {
+
+    console.log(message);
+
+    return;
+
+  }
 
 
   toast.textContent =
