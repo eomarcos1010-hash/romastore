@@ -645,6 +645,35 @@
 
 </footer>
 
+<!-- Ícone discreto para acessar o painel administrativo -->
+<a
+  href="login.html"
+  class="admin-link"
+  title="Admin"
+  aria-label="Área administrativa"
+>
+  🔒
+</a>
+
+<style>
+  .admin-link {
+    position: fixed;
+    right: 10px;
+    bottom: 8px;
+    font-size: 11px;
+    line-height: 1;
+    text-decoration: none;
+    opacity: 0.25;
+    z-index: 9999;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+
+  .admin-link:hover {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+</style>
+
 <script src="script.js"></script>
 
 </body>
