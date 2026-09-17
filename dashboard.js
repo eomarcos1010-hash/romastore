@@ -27,16 +27,19 @@ const defaultCategories = [
     name: "Otimização",
     image: ""
   },
+
   {
     id: "windows",
     name: "Windows",
     image: ""
   },
+
   {
     id: "personalizacao",
     name: "Personalização",
     image: ""
   },
+
   {
     id: "ferramentas",
     name: "Ferramentas",
@@ -65,55 +68,24 @@ function clone(value) {
 
 
 function load(key, fallback) {
-
   try {
-
     const saved = localStorage.getItem(key);
 
-    if (!saved) {
-      return clone(fallback);
-    }
+    return saved
+      ? JSON.parse(saved)
+      : clone(fallback);
 
-    const parsed = JSON.parse(saved);
-
-    return parsed;
-
-  } catch (error) {
-
-    console.error(
-      `Erro ao carregar ${key}:`,
-      error
-    );
-
+  } catch {
     return clone(fallback);
   }
 }
 
 
 function save(key, value) {
-
-  try {
-
-    localStorage.setItem(
-      key,
-      JSON.stringify(value)
-    );
-
-    return true;
-
-  } catch (error) {
-
-    console.error(
-      `Erro ao salvar ${key}:`,
-      error
-    );
-
-    showToast(
-      "Não foi possível salvar os dados."
-    );
-
-    return false;
-  }
+  localStorage.setItem(
+    key,
+    JSON.stringify(value)
+  );
 }
 
 
@@ -145,9 +117,23 @@ function readFileAsDataURL(file) {
 }
 
 
-/* =========================================================
-   IDENTIFICADOR AUTOMÁTICO
-   ========================================================= */
+/*
+|--------------------------------------------------------------------------
+| IDENTIFICADORES
+|--------------------------------------------------------------------------
+|
+| O identificador agora é OPCIONAL.
+|
+| Se o usuário deixar vazio:
+| "Minha Categoria" -> "minha-categoria"
+|
+| Se já existir:
+| "minha-categoria"
+| "minha-categoria-2"
+| "minha-categoria-3"
+|
+*/
+
 
 function normalizeId(value) {
 
@@ -161,7 +147,10 @@ function normalizeId(value) {
 }
 
 
-function generateCategoryId(name, currentId = "") {
+function generateCategoryId(
+  name,
+  currentId = ""
+) {
 
   let baseId = normalizeId(name);
 
@@ -170,19 +159,19 @@ function generateCategoryId(name, currentId = "") {
   }
 
   let id = baseId;
-  let number = 2;
+  let counter = 2;
 
 
   while (
     categories.some(category =>
-      String(category.id) === String(id) &&
-      String(category.id) !== String(currentId)
+      category.id === id &&
+      category.id !== currentId
     )
   ) {
 
-    id = `${baseId}-${number}`;
+    id = `${baseId}-${counter}`;
 
-    number++;
+    counter++;
 
   }
 
@@ -191,10 +180,6 @@ function generateCategoryId(name, currentId = "") {
 
 }
 
-
-/* =========================================================
-   SEGURANÇA HTML
-   ========================================================= */
 
 function escapeHTML(value) {
 
@@ -217,9 +202,12 @@ function escapeAttribute(value) {
 }
 
 
-/* =========================================================
-   DADOS
-   ========================================================= */
+/*
+|--------------------------------------------------------------------------
+| DADOS
+|--------------------------------------------------------------------------
+*/
+
 
 let products = load(
   PRODUCTS_KEY,
@@ -242,9 +230,12 @@ let config = {
 };
 
 
-/* =========================================================
-   INICIALIZAÇÃO
-   ========================================================= */
+/*
+|--------------------------------------------------------------------------
+| INICIALIZAÇÃO
+|--------------------------------------------------------------------------
+*/
+
 
 document.addEventListener(
   "DOMContentLoaded",
@@ -268,9 +259,12 @@ document.addEventListener(
 );
 
 
-/* =========================================================
-   NAVEGAÇÃO
-   ========================================================= */
+/*
+|--------------------------------------------------------------------------
+| NAVEGAÇÃO
+|--------------------------------------------------------------------------
+*/
+
 
 function setupNavigation() {
 
@@ -349,96 +343,69 @@ function showSection(section) {
   };
 
 
-  const pageTitle = $("pageTitle");
-
-  if (pageTitle) {
-
-    pageTitle.textContent =
-      titles[section] || "Dashboard";
-
-  }
+  $("pageTitle").textContent =
+    titles[section] || "Dashboard";
 
 }
 
 
-/* =========================================================
-   VISÃO GERAL
-   ========================================================= */
+/*
+|--------------------------------------------------------------------------
+| VISÃO GERAL
+|--------------------------------------------------------------------------
+*/
+
 
 function setupOverview() {
 
-  const saveButton =
-    $("saveAllButton");
+  $("saveAllButton")
+    .addEventListener(
+      "click",
+      () => {
 
-  if (!saveButton) return;
+        saveEverything();
 
+        showToast(
+          "Todas as alterações foram salvas."
+        );
 
-  saveButton.addEventListener(
-    "click",
-    () => {
-
-      saveEverything();
-
-      showToast(
-        "Todas as alterações foram salvas."
-      );
-
-    }
-  );
+      }
+    );
 
 }
 
 
 function updateOverview() {
 
-  const categoriesElement =
-    $("overviewCategories");
-
-  const productsElement =
-    $("overviewProducts");
-
-  const activeProductsElement =
-    $("overviewActiveProducts");
+  $("overviewCategories")
+    .textContent = categories.length;
 
 
-  if (categoriesElement) {
-    categoriesElement.textContent =
-      categories.length;
-  }
+  $("overviewProducts")
+    .textContent = products.length;
 
 
-  if (productsElement) {
-    productsElement.textContent =
-      products.length;
-  }
-
-
-  if (activeProductsElement) {
-
-    activeProductsElement.textContent =
+  $("overviewActiveProducts")
+    .textContent =
       products.filter(
         product =>
           product.status !== "inactive"
       ).length;
 
-  }
-
 }
 
 
-/* =========================================================
-   LOJA
-   ========================================================= */
+/*
+|--------------------------------------------------------------------------
+| LOJA
+|--------------------------------------------------------------------------
+*/
+
 
 function setupStoreForm() {
 
-  const heroInput =
-    $("heroImage");
-
-
-  if (heroInput) {
-
-    heroInput.addEventListener(
+  $("heroImage")
+    .addEventListener(
       "change",
       async event => {
 
@@ -453,17 +420,12 @@ function setupStoreForm() {
           const image =
             await readFileAsDataURL(file);
 
-
-          $("heroPreview").src =
-            image;
-
+          $("heroPreview").src = image;
 
           $("heroPreview").style.display =
             "block";
 
-        } catch (error) {
-
-          console.error(error);
+        } catch {
 
           showToast(
             "Não foi possível carregar o banner."
@@ -474,23 +436,14 @@ function setupStoreForm() {
       }
     );
 
-  }
 
+  $("storeForm")
+    .addEventListener(
+      "submit",
+      async event => {
 
-  const storeForm =
-    $("storeForm");
+        event.preventDefault();
 
-  if (!storeForm) return;
-
-
-  storeForm.addEventListener(
-    "submit",
-    async event => {
-
-      event.preventDefault();
-
-
-      try {
 
         const file =
           $("heroImage").files[0];
@@ -526,26 +479,13 @@ function setupStoreForm() {
           "Dados da loja salvos."
         );
 
-      } catch (error) {
-
-        console.error(error);
-
-        showToast(
-          "Erro ao salvar os dados da loja."
-        );
-
       }
-
-    }
-  );
+    );
 
 }
 
 
 function loadStoreForm() {
-
-  if (!$("storeName")) return;
-
 
   $("storeName").value =
     config.storeName || "";
@@ -567,19 +507,17 @@ function loadStoreForm() {
 }
 
 
-/* =========================================================
-   CATEGORIAS
-   ========================================================= */
+/*
+|--------------------------------------------------------------------------
+| CATEGORIAS
+|--------------------------------------------------------------------------
+*/
+
 
 function setupCategoryForm() {
 
-  const newButton =
-    $("newCategoryButton");
-
-
-  if (newButton) {
-
-    newButton.addEventListener(
+  $("newCategoryButton")
+    .addEventListener(
       "click",
       () => {
 
@@ -588,44 +526,23 @@ function setupCategoryForm() {
       }
     );
 
-  }
 
-
-  const cancelButton =
-    $("cancelCategoryButton");
-
-
-  if (cancelButton) {
-
-    cancelButton.addEventListener(
+  $("cancelCategoryButton")
+    .addEventListener(
       "click",
       closeCategoryForm
     );
 
-  }
 
-
-  const cancelBottom =
-    $("cancelCategoryButtonBottom");
-
-
-  if (cancelBottom) {
-
-    cancelBottom.addEventListener(
+  $("cancelCategoryButtonBottom")
+    .addEventListener(
       "click",
       closeCategoryForm
     );
 
-  }
 
-
-  const imageInput =
-    $("categoryImage");
-
-
-  if (imageInput) {
-
-    imageInput.addEventListener(
+  $("categoryImage")
+    .addEventListener(
       "change",
       async event => {
 
@@ -645,15 +562,15 @@ function setupCategoryForm() {
             image;
 
 
-          $("categoryPreview").style.display =
-            "block";
+          $("categoryPreview")
+            .style
+            .display = "block";
 
-        } catch (error) {
 
-          console.error(error);
+        } catch {
 
           showToast(
-            "Não foi possível carregar a imagem."
+            "Não foi possível carregar a imagem da categoria."
           );
 
         }
@@ -661,24 +578,18 @@ function setupCategoryForm() {
       }
     );
 
-  }
 
+  /*
+   * SALVAR CATEGORIA
+   */
 
-  const categoryForm =
-    $("categoryForm");
+  $("categoryForm")
+    .addEventListener(
+      "submit",
+      async event => {
 
+        event.preventDefault();
 
-  if (!categoryForm) return;
-
-
-  categoryForm.addEventListener(
-    "submit",
-    async event => {
-
-      event.preventDefault();
-
-
-      try {
 
         const name =
           $("categoryName")
@@ -686,10 +597,15 @@ function setupCategoryForm() {
             .trim();
 
 
-        const oldId =
-          $("categoryId")
+        const manualId =
+          $("categorySlug")
             .value
             .trim();
+
+
+        const oldId =
+          $("categoryId")
+            .value;
 
 
         const file =
@@ -697,9 +613,9 @@ function setupCategoryForm() {
             .files[0];
 
 
-        /* ============================================
-           SOMENTE O NOME É NECESSÁRIO
-           ============================================ */
+        /*
+         * SOMENTE O NOME É OBRIGATÓRIO.
+         */
 
         if (!name) {
 
@@ -714,40 +630,61 @@ function setupCategoryForm() {
         }
 
 
-        /* ============================================
-           CRIA ID AUTOMATICAMENTE
-           ============================================ */
+        /*
+         * IDENTIFICADOR MANUAL
+         *
+         * Se o usuário colocou um:
+         * usa ele.
+         *
+         * Se deixou vazio:
+         * gera automaticamente pelo nome.
+         */
 
-        let id;
+        let id =
+          normalizeId(manualId);
 
 
-        if (oldId) {
+        if (!id) {
 
-          /*
-           * Estamos editando.
-           * Mantém o ID antigo.
-           */
-
-          id = oldId;
+          id =
+            generateCategoryId(
+              name,
+              oldId
+            );
 
         } else {
 
           /*
-           * Estamos criando.
-           * Gera automaticamente.
+           * Se o ID informado já existe,
+           * NÃO bloqueia a criação.
+           *
+           * Gera outro automaticamente.
            */
 
-          id =
-            generateCategoryId(
-              name
+          const duplicate =
+            categories.some(
+              category =>
+                category.id === id &&
+                category.id !== oldId
             );
+
+
+          if (duplicate) {
+
+            id =
+              generateCategoryId(
+                id,
+                oldId
+              );
+
+          }
 
         }
 
 
-        /* ============================================
-           IMAGEM
-           ============================================ */
+        /*
+         * IMAGEM
+         */
 
         let image = "";
 
@@ -762,95 +699,21 @@ function setupCategoryForm() {
           const oldCategory =
             categories.find(
               category =>
-                String(category.id) ===
-                String(oldId)
+                category.id === oldId
             );
 
 
-          if (oldCategory) {
-
-            image =
-              oldCategory.image || "";
-
-          }
+          image =
+            oldCategory?.image || "";
 
         }
 
 
-        /* ============================================
-           OBJETO DA CATEGORIA
-           ============================================ */
-
-        const category = {
-
-          id: id,
-
-          name: name,
-
-          image: image
-
-        };
-
-
-        /* ============================================
-           PROCURAR CATEGORIA EXISTENTE
-           ============================================ */
-
-        const existingIndex =
-          categories.findIndex(
-            item =>
-              String(item.id) ===
-              String(oldId)
-          );
-
-
-        /* ============================================
-           EDITAR
-           ============================================ */
-
-        if (
-          oldId &&
-          existingIndex >= 0
-        ) {
-
-          categories[existingIndex] =
-            category;
-
-        }
-
-
-        /* ============================================
-           CRIAR
-           ============================================ */
-
-        else {
-
-          categories.push(
-            category
-          );
-
-        }
-
-
-        /* ============================================
-           SALVAR
-           ============================================ */
-
-        const saved =
-          save(
-            CATEGORIES_KEY,
-            categories
-          );
-
-
-        if (!saved) {
-          return;
-        }
-
-
-        /* ============================================
-           ATUALIZAR PRODUTOS SE NECESSÁRIO
-           ============================================ */
+        /*
+         * Se o identificador mudou,
+         * atualiza os produtos vinculados
+         * ao identificador antigo.
+         */
 
         if (
           oldId &&
@@ -861,30 +724,82 @@ function setupCategoryForm() {
             product => {
 
               if (
-                String(product.category) ===
-                String(oldId)
+                product.category === oldId
               ) {
 
-                product.category =
-                  id;
+                product.category = id;
 
               }
 
             }
           );
 
+        }
 
-          save(
-            PRODUCTS_KEY,
-            products
+
+        /*
+         * NOVA CATEGORIA
+         */
+
+        const category = {
+
+          id,
+          name,
+          image
+
+        };
+
+
+        const index =
+          categories.findIndex(
+            item =>
+              item.id === oldId
+          );
+
+
+        /*
+         * EDITAR
+         */
+
+        if (index >= 0) {
+
+          categories[index] =
+            category;
+
+        }
+
+        /*
+         * CRIAR
+         */
+
+        else {
+
+          categories.push(
+            category
           );
 
         }
 
 
-        /* ============================================
-           ATUALIZA TELA
-           ============================================ */
+        /*
+         * SALVAR
+         */
+
+        save(
+          CATEGORIES_KEY,
+          categories
+        );
+
+
+        save(
+          PRODUCTS_KEY,
+          products
+        );
+
+
+        /*
+         * ATUALIZAR DASHBOARD
+         */
 
         renderAll();
 
@@ -893,60 +808,31 @@ function setupCategoryForm() {
 
 
         showToast(
-          oldId
-            ? "Categoria atualizada com sucesso."
-            : "Categoria criada com sucesso."
-        );
-
-
-        console.log(
-          "Categoria salva:",
-          category
-        );
-
-
-      } catch (error) {
-
-        console.error(
-          "ERRO AO CRIAR CATEGORIA:",
-          error
-        );
-
-
-        showToast(
-          "Erro ao criar a categoria. Veja o console."
+          "Categoria salva com sucesso."
         );
 
       }
-
-    }
-  );
+    );
 
 }
 
 
-/* =========================================================
-   ABRIR FORMULÁRIO DE CATEGORIA
-   ========================================================= */
-
-function openCategoryForm(category = null) {
-
-  const formCard =
-    $("categoryFormCard");
+/*
+|--------------------------------------------------------------------------
+| ABRIR FORMULÁRIO DE CATEGORIA
+|--------------------------------------------------------------------------
+*/
 
 
-  const form =
-    $("categoryForm");
+function openCategoryForm(
+  category = null
+) {
 
-
-  if (!formCard || !form) return;
-
-
-  formCard.hidden =
+  $("categoryFormCard").hidden =
     false;
 
 
-  form.reset();
+  $("categoryForm").reset();
 
 
   if (category) {
@@ -961,7 +847,11 @@ function openCategoryForm(category = null) {
 
 
     $("categoryName").value =
-      category.name || "";
+      category.name;
+
+
+    $("categorySlug").value =
+      category.id;
 
 
     $("categoryPreview").src =
@@ -984,6 +874,10 @@ function openCategoryForm(category = null) {
       "";
 
 
+    $("categorySlug").value =
+      "";
+
+
     $("categoryPreview")
       .removeAttribute("src");
 
@@ -994,48 +888,29 @@ function openCategoryForm(category = null) {
   }
 
 
-  formCard.scrollIntoView({
-    behavior: "smooth",
-    block: "start"
-  });
-
-
-  setTimeout(
-    () => {
-
-      $("categoryName").focus();
-
-    },
-    300
-  );
+  $("categoryFormCard")
+    .scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
 
 }
 
 
-/* =========================================================
-   FECHAR FORMULÁRIO DE CATEGORIA
-   ========================================================= */
+/*
+|--------------------------------------------------------------------------
+| FECHAR FORMULÁRIO DE CATEGORIA
+|--------------------------------------------------------------------------
+*/
+
 
 function closeCategoryForm() {
 
-  const formCard =
-    $("categoryFormCard");
-
-
-  const form =
-    $("categoryForm");
-
-
-  if (!formCard) return;
-
-
-  formCard.hidden =
+  $("categoryFormCard").hidden =
     true;
 
 
-  if (form) {
-    form.reset();
-  }
+  $("categoryForm").reset();
 
 
   $("categoryId").value =
@@ -1052,17 +927,17 @@ function closeCategoryForm() {
 }
 
 
-/* =========================================================
-   RENDERIZAR CATEGORIAS
-   ========================================================= */
+/*
+|--------------------------------------------------------------------------
+| RENDERIZAR CATEGORIAS
+|--------------------------------------------------------------------------
+*/
+
 
 function renderCategories() {
 
   const container =
     $("categoriesEditor");
-
-
-  if (!container) return;
 
 
   container.innerHTML =
@@ -1072,9 +947,11 @@ function renderCategories() {
   if (!categories.length) {
 
     container.innerHTML = `
+
       <div class="empty-editor">
         Nenhuma categoria cadastrada.
       </div>
+
     `;
 
     return;
@@ -1103,15 +980,25 @@ function renderCategories() {
             category.image
 
               ? `
+
                 <img
                   class="editor-item-image"
-                  src="${escapeAttribute(category.image)}"
-                  alt="${escapeAttribute(category.name)}"
+                  src="${escapeAttribute(
+                    category.image
+                  )}"
+                  alt="${escapeAttribute(
+                    category.name
+                  )}"
                 >
+
               `
 
               : `
-                <div class="editor-item-image"></div>
+
+                <div
+                  class="editor-item-image"
+                ></div>
+
               `
           }
 
@@ -1119,12 +1006,16 @@ function renderCategories() {
           <div>
 
             <h3>
-              ${escapeHTML(category.name)}
+              ${escapeHTML(
+                category.name
+              )}
             </h3>
 
             <p>
-              Identificador interno:
-              ${escapeHTML(category.id)}
+              ID:
+              ${escapeHTML(
+                category.id
+              )}
             </p>
 
           </div>
@@ -1134,16 +1025,12 @@ function renderCategories() {
 
         <div class="editor-actions">
 
-          <button
-            type="button"
-            data-action="edit"
-          >
+          <button data-action="edit">
             Editar
           </button>
 
 
           <button
-            type="button"
             class="delete-button"
             data-action="delete"
           >
@@ -1155,40 +1042,36 @@ function renderCategories() {
       `;
 
 
-      const editButton =
-        item.querySelector(
+      item
+        .querySelector(
           '[data-action="edit"]'
+        )
+        .addEventListener(
+          "click",
+          () => {
+
+            openCategoryForm(
+              category
+            );
+
+          }
         );
 
 
-      const deleteButton =
-        item.querySelector(
+      item
+        .querySelector(
           '[data-action="delete"]'
+        )
+        .addEventListener(
+          "click",
+          () => {
+
+            removeCategory(
+              category.id
+            );
+
+          }
         );
-
-
-      editButton.addEventListener(
-        "click",
-        () => {
-
-          openCategoryForm(
-            category
-          );
-
-        }
-      );
-
-
-      deleteButton.addEventListener(
-        "click",
-        () => {
-
-          removeCategory(
-            category.id
-          );
-
-        }
-      );
 
 
       container.appendChild(
@@ -1201,17 +1084,19 @@ function renderCategories() {
 }
 
 
-/* =========================================================
-   REMOVER CATEGORIA
-   ========================================================= */
+/*
+|--------------------------------------------------------------------------
+| REMOVER CATEGORIA
+|--------------------------------------------------------------------------
+*/
+
 
 function removeCategory(id) {
 
   const hasProducts =
     products.some(
       product =>
-        String(product.category) ===
-        String(id)
+        product.category === id
     );
 
 
@@ -1226,13 +1111,12 @@ function removeCategory(id) {
   }
 
 
-  const confirmed =
-    confirm(
+  if (
+    !confirm(
       "Deseja remover esta categoria?"
-    );
+    )
+  ) {
 
-
-  if (!confirmed) {
     return;
 
   }
@@ -1241,8 +1125,7 @@ function removeCategory(id) {
   categories =
     categories.filter(
       category =>
-        String(category.id) !==
-        String(id)
+        category.id !== id
     );
 
 
@@ -1262,19 +1145,17 @@ function removeCategory(id) {
 }
 
 
-/* =========================================================
-   PRODUTOS
-   ========================================================= */
+/*
+|--------------------------------------------------------------------------
+| PRODUTOS
+|--------------------------------------------------------------------------
+*/
+
 
 function setupProductForm() {
 
-  const newButton =
-    $("newProductButton");
-
-
-  if (newButton) {
-
-    newButton.addEventListener(
+  $("newProductButton")
+    .addEventListener(
       "click",
       () => {
 
@@ -1283,49 +1164,29 @@ function setupProductForm() {
       }
     );
 
-  }
 
-
-  const cancelButton =
-    $("cancelProductButton");
-
-
-  if (cancelButton) {
-
-    cancelButton.addEventListener(
+  $("cancelProductButton")
+    .addEventListener(
       "click",
       closeProductForm
     );
 
-  }
 
-
-  const cancelBottom =
-    $("cancelProductButtonBottom");
-
-
-  if (cancelBottom) {
-
-    cancelBottom.addEventListener(
+  $("cancelProductButtonBottom")
+    .addEventListener(
       "click",
       closeProductForm
     );
 
-  }
 
-
-  const imageInput =
-    $("productImage");
-
-
-  if (imageInput) {
-
-    imageInput.addEventListener(
+  $("productImage")
+    .addEventListener(
       "change",
       async event => {
 
         const file =
           event.target.files[0];
+
 
         if (!file) return;
 
@@ -1343,38 +1204,25 @@ function setupProductForm() {
           $("productPreview").style.display =
             "block";
 
-        } catch (error) {
-
-          console.error(error);
+        } catch {
 
           showToast(
-            "Não foi possível carregar a imagem."
+            "Não foi possível carregar a imagem do produto."
           );
 
         }
 
       }
-
     );
 
-  }
 
+  $("productForm")
+    .addEventListener(
+      "submit",
+      async event => {
 
-  const productForm =
-    $("productForm");
+        event.preventDefault();
 
-
-  if (!productForm) return;
-
-
-  productForm.addEventListener(
-    "submit",
-    async event => {
-
-      event.preventDefault();
-
-
-      try {
 
         const name =
           $("productName")
@@ -1443,7 +1291,9 @@ function setupProductForm() {
           [];
 
 
-        if (additionalFiles.length) {
+        if (
+          additionalFiles.length
+        ) {
 
           images =
             await Promise.all(
@@ -1549,50 +1399,31 @@ function setupProductForm() {
           "Produto salvo."
         );
 
-      } catch (error) {
-
-        console.error(
-          "Erro ao salvar produto:",
-          error
-        );
-
-        showToast(
-          "Erro ao salvar produto."
-        );
-
       }
-
-    }
-  );
+    );
 
 }
 
 
-/* =========================================================
-   ABRIR PRODUTO
-   ========================================================= */
-
-function openProductForm(product = null) {
-
-  const card =
-    $("productFormCard");
+/*
+|--------------------------------------------------------------------------
+| ABRIR PRODUTO
+|--------------------------------------------------------------------------
+*/
 
 
-  const form =
-    $("productForm");
+function openProductForm(
+  product = null
+) {
 
-
-  if (!card || !form) return;
-
-
-  card.hidden =
+  $("productFormCard").hidden =
     false;
 
 
   fillCategorySelect();
 
 
-  form.reset();
+  $("productForm").reset();
 
 
   if (product) {
@@ -1680,38 +1511,29 @@ function openProductForm(product = null) {
   }
 
 
-  card.scrollIntoView({
-    behavior: "smooth",
-    block: "start"
-  });
+  $("productFormCard")
+    .scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
 
 }
 
 
-/* =========================================================
-   FECHAR PRODUTO
-   ========================================================= */
+/*
+|--------------------------------------------------------------------------
+| FECHAR PRODUTO
+|--------------------------------------------------------------------------
+*/
+
 
 function closeProductForm() {
 
-  const card =
-    $("productFormCard");
-
-
-  const form =
-    $("productForm");
-
-
-  if (!card) return;
-
-
-  card.hidden =
+  $("productFormCard").hidden =
     true;
 
 
-  if (form) {
-    form.reset();
-  }
+  $("productForm").reset();
 
 
   $("productId").value =
@@ -1728,9 +1550,12 @@ function closeProductForm() {
 }
 
 
-/* =========================================================
-   SELECT DE CATEGORIAS
-   ========================================================= */
+/*
+|--------------------------------------------------------------------------
+| SELECT DE CATEGORIAS DOS PRODUTOS
+|--------------------------------------------------------------------------
+*/
+
 
 function fillCategorySelect() {
 
@@ -1738,37 +1563,8 @@ function fillCategorySelect() {
     $("productCategory");
 
 
-  if (!select) return;
-
-
   select.innerHTML =
     "";
-
-
-  if (!categories.length) {
-
-    const option =
-      document.createElement(
-        "option"
-      );
-
-
-    option.value =
-      "";
-
-
-    option.textContent =
-      "Nenhuma categoria cadastrada";
-
-
-    select.appendChild(
-      option
-    );
-
-
-    return;
-
-  }
 
 
   categories.forEach(
@@ -1798,17 +1594,17 @@ function fillCategorySelect() {
 }
 
 
-/* =========================================================
-   RENDERIZAR PRODUTOS
-   ========================================================= */
+/*
+|--------------------------------------------------------------------------
+| RENDERIZAR PRODUTOS
+|--------------------------------------------------------------------------
+*/
+
 
 function renderProducts() {
 
   const container =
     $("productsEditor");
-
-
-  if (!container) return;
 
 
   container.innerHTML =
@@ -1818,9 +1614,11 @@ function renderProducts() {
   if (!products.length) {
 
     container.innerHTML = `
+
       <div class="empty-editor">
         Nenhum produto cadastrado.
       </div>
+
     `;
 
     return;
@@ -1834,8 +1632,8 @@ function renderProducts() {
       const category =
         categories.find(
           item =>
-            String(item.id) ===
-            String(product.category)
+            item.id ===
+            product.category
         );
 
 
@@ -1857,15 +1655,25 @@ function renderProducts() {
             product.image
 
               ? `
+
                 <img
                   class="editor-item-image"
-                  src="${escapeAttribute(product.image)}"
-                  alt="${escapeAttribute(product.name)}"
+                  src="${escapeAttribute(
+                    product.image
+                  )}"
+                  alt="${escapeAttribute(
+                    product.name
+                  )}"
                 >
+
               `
 
               : `
-                <div class="editor-item-image"></div>
+
+                <div
+                  class="editor-item-image"
+                ></div>
+
               `
           }
 
@@ -1873,7 +1681,9 @@ function renderProducts() {
           <div>
 
             <h3>
-              ${escapeHTML(product.name)}
+              ${escapeHTML(
+                product.name
+              )}
             </h3>
 
 
@@ -1886,12 +1696,14 @@ function renderProducts() {
               )}
 
               · R$
-
               ${Number(
                 product.price || 0
               )
                 .toFixed(2)
-                .replace(".", ",")}
+                .replace(
+                  ".",
+                  ","
+                )}
 
             </p>
 
@@ -1902,16 +1714,12 @@ function renderProducts() {
 
         <div class="editor-actions">
 
-          <button
-            type="button"
-            data-action="edit"
-          >
+          <button data-action="edit">
             Editar
           </button>
 
 
           <button
-            type="button"
             class="delete-button"
             data-action="delete"
           >
@@ -1965,9 +1773,12 @@ function renderProducts() {
 }
 
 
-/* =========================================================
-   REMOVER PRODUTO
-   ========================================================= */
+/*
+|--------------------------------------------------------------------------
+| REMOVER PRODUTO
+|--------------------------------------------------------------------------
+*/
+
 
 function removeProduct(id) {
 
@@ -2005,9 +1816,12 @@ function removeProduct(id) {
 }
 
 
-/* =========================================================
-   PRÓXIMO ID
-   ========================================================= */
+/*
+|--------------------------------------------------------------------------
+| PRÓXIMO ID DO PRODUTO
+|--------------------------------------------------------------------------
+*/
+
 
 function getNextProductId() {
 
@@ -2026,70 +1840,64 @@ function getNextProductId() {
 }
 
 
-/* =========================================================
-   SUPORTE
-   ========================================================= */
+/*
+|--------------------------------------------------------------------------
+| SUPORTE
+|--------------------------------------------------------------------------
+*/
+
 
 function setupSupportForm() {
 
-  const form =
-    $("supportForm");
+  $("supportForm")
+    .addEventListener(
+      "submit",
+      event => {
+
+        event.preventDefault();
 
 
-  if (!form) return;
+        config.discord =
+          $("discord")
+            .value
+            .trim();
 
 
-  form.addEventListener(
-    "submit",
-    event => {
-
-      event.preventDefault();
-
-
-      config.discord =
-        $("discord")
-          .value
-          .trim();
+        config.whatsapp =
+          $("whatsapp")
+            .value
+            .trim();
 
 
-      config.whatsapp =
-        $("whatsapp")
-          .value
-          .trim();
+        config.tiktok =
+          $("tiktok")
+            .value
+            .trim();
 
 
-      config.tiktok =
-        $("tiktok")
-          .value
-          .trim();
+        config.instagram =
+          $("instagram")
+            .value
+            .trim();
 
 
-      config.instagram =
-        $("instagram")
-          .value
-          .trim();
+        save(
+          CONFIG_KEY,
+          config
+        );
 
 
-      save(
-        CONFIG_KEY,
-        config
-      );
+        showToast(
+          "Links de suporte salvos."
+        );
 
-
-      showToast(
-        "Links de suporte salvos."
-      );
-
-    }
-  );
+      }
+    );
 
 }
 
 
 function loadSupportForm() {
-
-  if (!$("discord")) return;
-
 
   $("discord").value =
     config.discord || "";
@@ -2109,9 +1917,12 @@ function loadSupportForm() {
 }
 
 
-/* =========================================================
-   SALVAR TUDO
-   ========================================================= */
+/*
+|--------------------------------------------------------------------------
+| SALVAR TUDO
+|--------------------------------------------------------------------------
+*/
+
 
 function saveEverything() {
 
@@ -2135,9 +1946,12 @@ function saveEverything() {
 }
 
 
-/* =========================================================
-   RENDERIZAR TUDO
-   ========================================================= */
+/*
+|--------------------------------------------------------------------------
+| RENDERIZAR TUDO
+|--------------------------------------------------------------------------
+*/
+
 
 function renderAll() {
 
@@ -2156,23 +1970,17 @@ function renderAll() {
 }
 
 
-/* =========================================================
-   TOAST
-   ========================================================= */
+/*
+|--------------------------------------------------------------------------
+| TOAST
+|--------------------------------------------------------------------------
+*/
+
 
 function showToast(message) {
 
   const toast =
     $("toast");
-
-
-  if (!toast) {
-
-    console.log(message);
-
-    return;
-
-  }
 
 
   toast.textContent =
