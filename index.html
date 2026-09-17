@@ -13,6 +13,7 @@
 <body>
 
 <header class="header">
+
   <a
     class="brand"
     href="#"
@@ -25,6 +26,7 @@
   </a>
 
   <div class="search">
+
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <circle cx="11" cy="11" r="7"></circle>
       <path d="m16 16 4 4"></path>
@@ -37,9 +39,11 @@
       autocomplete="off"
       aria-label="Buscar produto"
     >
+
   </div>
 
   <div class="header-actions">
+
     <button
       class="header-icon"
       id="supportButton"
@@ -48,6 +52,7 @@
       aria-label="Abrir suporte"
       aria-expanded="false"
     >
+
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -59,6 +64,7 @@
         <rect x="16" y="12" width="5" height="7" rx="2"></rect>
         <path d="M21 17c0 3-3 4-6 4"></path>
       </svg>
+
     </button>
 
     <button
@@ -66,6 +72,7 @@
       id="cartButton"
       type="button"
     >
+
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -80,12 +87,24 @@
       Carrinho
 
       <span id="cartCount">0</span>
+
     </button>
+
   </div>
+
 </header>
 
-<div class="support-panel" id="supportPanel" hidden>
+
+<!-- SUPORTE -->
+
+<div
+  class="support-panel"
+  id="supportPanel"
+  hidden
+>
+
   <div class="support-title">
+
     <div>
       <small>ROMA STORE</small>
       <h3>Fale conosco</h3>
@@ -98,6 +117,7 @@
     >
       ×
     </button>
+
   </div>
 
   <p>
@@ -110,15 +130,20 @@
     target="_blank"
     rel="noopener noreferrer"
   >
+
     <span class="support-name">
+
       <img
         src="https://cdn.simpleicons.org/discord/ffffff"
         alt="Discord"
       >
+
       Discord
+
     </span>
 
     <span aria-hidden="true">↗</span>
+
   </a>
 
   <a
@@ -127,15 +152,20 @@
     target="_blank"
     rel="noopener noreferrer"
   >
+
     <span class="support-name">
+
       <img
         src="https://cdn.simpleicons.org/tiktok/ffffff"
         alt="TikTok"
       >
+
       TikTok
+
     </span>
 
     <span aria-hidden="true">↗</span>
+
   </a>
 
   <a
@@ -144,15 +174,20 @@
     target="_blank"
     rel="noopener noreferrer"
   >
+
     <span class="support-name">
+
       <img
         src="https://cdn.simpleicons.org/instagram/ffffff"
         alt="Instagram"
       >
+
       Instagram
+
     </span>
 
     <span aria-hidden="true">↗</span>
+
   </a>
 
   <a
@@ -161,29 +196,43 @@
     target="_blank"
     rel="noopener noreferrer"
   >
+
     <span class="support-name">
+
       <img
         src="https://cdn.simpleicons.org/whatsapp/ffffff"
         alt="WhatsApp"
       >
+
       WhatsApp
+
     </span>
 
     <span aria-hidden="true">↗</span>
+
   </a>
+
 </div>
+
+
+<!-- PÁGINA INICIAL -->
 
 <main id="homePage">
 
   <section class="hero">
+
     <img
       id="heroImage"
       src="Identidade Visual Roma Store.png"
       alt="Roma Store"
     >
+
   </section>
 
+
   <section class="store-content">
+
+    <!-- CATEGORIAS -->
 
     <div class="categories-section">
 
@@ -205,12 +254,16 @@
 
       </div>
 
+
       <div
         class="categories-list"
         id="categoriesList"
       ></div>
 
     </div>
+
+
+    <!-- PRODUTOS -->
 
     <div class="section-heading products-heading">
 
@@ -226,14 +279,18 @@
 
       </div>
 
-      <span id="productCount">0 produtos</span>
+      <span id="productCount">
+        0 produtos
+      </span>
 
     </div>
+
 
     <div
       class="products-grid"
       id="productsGrid"
     ></div>
+
 
     <div
       class="empty"
@@ -244,7 +301,11 @@
     </div>
 
   </section>
+
 </main>
+
+
+<!-- PÁGINA DO PRODUTO -->
 
 <main
   class="product-page"
@@ -260,11 +321,14 @@
     ← Voltar para a loja
   </button>
 
+
   <div class="detail-layout">
 
     <section class="detail-main">
 
       <div class="product-top">
+
+        <!-- GALERIA -->
 
         <div class="gallery">
 
@@ -278,6 +342,7 @@
 
           </div>
 
+
           <div class="carousel">
 
             <button
@@ -289,10 +354,12 @@
               ‹
             </button>
 
+
             <div
               class="thumbnails"
               id="thumbnails"
             ></div>
+
 
             <button
               class="carousel-arrow"
@@ -305,12 +372,16 @@
 
           </div>
 
+
           <div
             class="image-counter"
             id="imageCounter"
           ></div>
 
         </div>
+
+
+        <!-- INFORMAÇÕES DO PRODUTO -->
 
         <div class="purchase-info">
 
@@ -319,7 +390,9 @@
             id="detailCategory"
           ></span>
 
+
           <h1 id="detailName"></h1>
+
 
           <div class="rating">
 
@@ -327,13 +400,16 @@
               ★★★★★
             </span>
 
-            <b id="detailRating">5.0</b>
+            <b id="detailRating">
+              5.0
+            </b>
 
             <small id="ratingStoreName">
               Roma Store
             </small>
 
           </div>
+
 
           <div class="price-area">
 
@@ -357,11 +433,13 @@
 
           </div>
 
+
           <div class="purchase-box">
 
             <div class="stock">
               ✓ Produto disponível
             </div>
+
 
             <button
               class="buy-button"
@@ -384,6 +462,7 @@
 
             </button>
 
+
             <button
               class="add-button"
               id="addButton"
@@ -401,6 +480,9 @@
         </div>
 
       </div>
+
+
+      <!-- DESCRIÇÃO -->
 
       <section class="description-card">
 
@@ -421,13 +503,18 @@
 
         </h2>
 
+
         <h3 id="descriptionTitle"></h3>
+
 
         <p id="longDescription"></p>
 
       </section>
 
     </section>
+
+
+    <!-- INFORMAÇÕES LATERAIS -->
 
     <aside class="side-information">
 
@@ -439,7 +526,9 @@
 
         <div>
 
-          <h3>Entrega imediata</h3>
+          <h3>
+            Entrega imediata
+          </h3>
 
           <p>
             Receba o seu pacote imediatamente após o pagamento.
@@ -449,6 +538,7 @@
 
       </div>
 
+
       <div class="info-card">
 
         <div class="info-icon">
@@ -457,7 +547,9 @@
 
         <div>
 
-          <h3>Segurança total</h3>
+          <h3>
+            Segurança total
+          </h3>
 
           <p>
             Seus dados são protegidos durante todo o processo.
@@ -467,6 +559,7 @@
 
       </div>
 
+
       <div class="info-card payment-card">
 
         <div class="info-icon">
@@ -475,11 +568,14 @@
 
         <div>
 
-          <h3>Forma de pagamento</h3>
+          <h3>
+            Forma de pagamento
+          </h3>
 
           <p>
             Pagamento rápido e seguro via Pix.
           </p>
+
 
           <div class="payment-methods">
 
@@ -493,11 +589,15 @@
 
       </div>
 
+
+      <!-- AVALIAÇÕES -->
+
       <div class="reviews-card">
 
         <h3>
           ★ Avaliações
         </h3>
+
 
         <div class="review-summary">
 
@@ -517,46 +617,71 @@
 
           </div>
 
+
           <div class="rating-bars">
 
             <div>
-              <span>5 ★</span>
+
+              <span>
+                5 ★
+              </span>
 
               <i>
                 <b style="width:100%"></b>
               </i>
+
             </div>
 
+
             <div>
-              <span>4 ★</span>
+
+              <span>
+                4 ★
+              </span>
 
               <i>
                 <b style="width:0%"></b>
               </i>
+
             </div>
 
+
             <div>
-              <span>3 ★</span>
+
+              <span>
+                3 ★
+              </span>
 
               <i>
                 <b style="width:0%"></b>
               </i>
+
             </div>
 
+
             <div>
-              <span>2 ★</span>
+
+              <span>
+                2 ★
+              </span>
 
               <i>
                 <b style="width:0%"></b>
               </i>
+
             </div>
 
+
             <div>
-              <span>1 ★</span>
+
+              <span>
+                1 ★
+              </span>
 
               <i>
                 <b style="width:0%"></b>
               </i>
+
             </div>
 
           </div>
@@ -571,6 +696,9 @@
 
 </main>
 
+
+<!-- CARRINHO -->
+
 <aside
   class="cart-panel"
   id="cartPanel"
@@ -579,7 +707,9 @@
 
   <div class="cart-heading">
 
-    <h2>Seu carrinho</h2>
+    <h2>
+      Seu carrinho
+    </h2>
 
     <button
       id="closeCart"
@@ -591,7 +721,9 @@
 
   </div>
 
+
   <div id="cartItems"></div>
+
 
   <div class="cart-footer">
 
@@ -605,6 +737,7 @@
 
     </strong>
 
+
     <button
       class="buy-button"
       id="checkoutButton"
@@ -617,17 +750,23 @@
 
 </aside>
 
+
 <div
   class="overlay"
   id="overlay"
   hidden
 ></div>
 
+
+<!-- RODAPÉ -->
+
 <footer>
 
   <div class="brand">
 
-    <span class="brand-icon">R</span>
+    <span class="brand-icon">
+      R
+    </span>
 
     <span id="footerBrandName">
       roma store
@@ -635,9 +774,11 @@
 
   </div>
 
+
   <p id="footerDescription">
     Sua loja de tecnologia.
   </p>
+
 
   <p>
     © 2026 Roma Store.
@@ -645,7 +786,9 @@
 
 </footer>
 
-<!-- Ícone discreto para acessar o painel administrativo -->
+
+<!-- ACESSO ADMINISTRATIVO -->
+
 <a
   href="login.html"
   class="admin-link"
@@ -655,7 +798,11 @@
   🔒
 </a>
 
+
+<!-- ESTILO DO ÍCONE ADMIN -->
+
 <style>
+
   html,
   body {
     position: relative;
@@ -663,34 +810,52 @@
 
   .admin-link {
     position: fixed !important;
+
     right: 6px !important;
     bottom: 2px !important;
+
     top: auto !important;
     left: auto !important;
 
     display: block;
+
     width: 16px;
     height: 16px;
 
     font-size: 10px;
     line-height: 16px;
+
     text-align: center;
+
     text-decoration: none;
 
     opacity: 0.2;
+
     z-index: 999999;
 
     transform: none !important;
+
     transition: none !important;
   }
 
   .admin-link:hover {
     opacity: 0.2;
+
     transform: none !important;
   }
+
 </style>
 
+
+<!-- SUPABASE -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
+<!-- SCRIPT DA LOJA -->
+
 <script src="script.js"></script>
+
 
 </body>
 </html>
