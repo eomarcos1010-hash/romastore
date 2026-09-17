@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#08070f">
+
+  <title>Login - Roma Store</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        radial-gradient(circle at top, #171126 0%, #08070f 45%, #050509 100%);
+      color: #fff;
+      padding: 20px;
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .login-box {
+      background: rgba(15, 13, 25, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 38px 32px;
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(15px);
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .logo h1 {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    .logo span {
+      color: #8b5cf6;
+    }
+
+    .logo p {
+      margin-top: 8px;
+      color: #8d8998;
+      font-size: 14px;
+    }
+
+    .input-group {
+      margin-bottom: 18px;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #d8d5df;
+    }
+
+    .input-group input {
+      width: 100%;
+      height: 50px;
+      padding: 0 15px;
+      border-radius: 11px;
+      border: 1px solid #292534;
+      outline: none;
+      background: #0b0911;
+      color: #fff;
+      font-size: 15px;
+      transition: 0.2s;
+    }
+
+    .input-group input:focus {
+      border-color: #8b5cf6;
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+    }
+
+    .login-btn {
+      width: 100%;
+      height: 50px;
+      margin-top: 8px;
+      border: none;
+      border-radius: 11px;
+      background: #8b5cf6;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .login-btn:hover {
+      background: #7c3aed;
+      transform: translateY(-1px);
+    }
+
+    .error {
+      display: none;
+      margin-top: 15px;
+      padding: 11px;
+      border-radius: 9px;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .back {
+      display: block;
+      margin-top: 22px;
+      text-align: center;
+      color: #85818f;
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .back:hover {
+      color: #fff;
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="login-container">
+
+    <div class="login-box">
+
+      <div class="logo">
+        <h1>Roma<span>Store</span></h1>
+        <p>Acesso ao painel administrativo</p>
+      </div>
+
+      <form id="loginForm">
+
+        <div class="input-group">
+          <label for="username">Usuário</label>
+
+          <input
+            type="text"
+            id="username"
+            placeholder="Digite seu usuário"
+            autocomplete="username"
+            required
+          >
+        </div>
+
+        <div class="input-group">
+          <label for="password">Senha</label>
+
+          <input
+            type="password"
+            id="password"
+            placeholder="Digite sua senha"
+            autocomplete="current-password"
+            required
+          >
+        </div>
+
+        <button type="submit" class="login-btn">
+          Entrar no Dashboard
+        </button>
+
+        <div class="error" id="error">
+          Usuário ou senha incorretos.
+        </div>
+
+      </form>
+
+      <a href="index.html" class="back">
+        ← Voltar para a loja
+      </a>
+
+    </div>
+
+  </main>
+
+  <script>
+    const loginForm = document.getElementById("loginForm");
+    const error = document.getElementById("error");
+
+    loginForm.addEventListener("submit", function(event) {
+      event.preventDefault();
+
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      const usuarioCorreto = "admin";
+      const senhaCorreta = "jesus0609";
+
+      if (
+        username === usuarioCorreto &&
+        password === senhaCorreta
+      ) {
+        window.location.href = "dashboard.html";
+      } else {
+        error.style.display = "block";
+      }
+    });
+  </script>
+
+</body>
+</html>
