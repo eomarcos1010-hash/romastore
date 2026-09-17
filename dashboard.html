@@ -1,12 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Dashboard — Roma Store</title>
-
   <link rel="stylesheet" href="dashboard.css">
 </head>
 
@@ -17,69 +14,40 @@
   <aside class="sidebar">
 
     <div class="sidebar-brand">
-
       <span class="brand-icon">R</span>
 
       <div>
         <strong>roma store</strong>
         <small>Painel administrativo</small>
       </div>
-
     </div>
-
 
     <nav class="sidebar-nav">
 
-      <button
-        class="nav-button active"
-        data-section="overview"
-        type="button"
-      >
+      <button class="nav-button active" data-section="overview">
         Visão geral
       </button>
 
-      <button
-        class="nav-button"
-        data-section="store"
-        type="button"
-      >
+      <button class="nav-button" data-section="store">
         Loja
       </button>
 
-      <button
-        class="nav-button"
-        data-section="categories"
-        type="button"
-      >
+      <button class="nav-button" data-section="categories">
         Categorias
       </button>
 
-      <button
-        class="nav-button"
-        data-section="products"
-        type="button"
-      >
+      <button class="nav-button" data-section="products">
         Produtos
       </button>
 
-      <button
-        class="nav-button"
-        data-section="support"
-        type="button"
-      >
+      <button class="nav-button" data-section="support">
         Suporte
       </button>
 
     </nav>
 
-
-    <a
-      class="view-store"
-      href="index.html"
-      target="_blank"
-    >
+    <a class="view-store" href="index.html" target="_blank">
       Abrir loja
-
       <span>↗</span>
     </a>
 
@@ -91,21 +59,11 @@
     <header class="dashboard-header">
 
       <div>
-
         <small>ROMA STORE</small>
-
-        <h1 id="pageTitle">
-          Visão geral
-        </h1>
-
+        <h1 id="pageTitle">Visão geral</h1>
       </div>
 
-
-      <button
-        class="save-top-button"
-        id="saveAllButton"
-        type="button"
-      >
+      <button class="save-top-button" id="saveAllButton">
         Salvar alterações
       </button>
 
@@ -114,49 +72,23 @@
 
     <!-- VISÃO GERAL -->
 
-    <section
-      class="dashboard-section active"
-      id="section-overview"
-    >
+    <section class="dashboard-section active" id="section-overview">
 
       <div class="stats-grid">
 
         <div class="stat-card">
-
-          <span>
-            Categorias
-          </span>
-
-          <strong id="overviewCategories">
-            0
-          </strong>
-
+          <span>Categorias</span>
+          <strong id="overviewCategories">0</strong>
         </div>
 
-
         <div class="stat-card">
-
-          <span>
-            Produtos
-          </span>
-
-          <strong id="overviewProducts">
-            0
-          </strong>
-
+          <span>Produtos</span>
+          <strong id="overviewProducts">0</strong>
         </div>
 
-
         <div class="stat-card">
-
-          <span>
-            Produtos ativos
-          </span>
-
-          <strong id="overviewActiveProducts">
-            0
-          </strong>
-
+          <span>Produtos ativos</span>
+          <strong id="overviewActiveProducts">0</strong>
         </div>
 
       </div>
@@ -168,13 +100,10 @@
 
           <div>
 
-            <h2>
-              Editor da loja
-            </h2>
+            <h2>Editor da loja</h2>
 
             <p>
-              Altere os dados da loja, categorias,
-              produtos e contatos.
+              Altere os dados da loja, categorias, produtos e contatos.
             </p>
 
           </div>
@@ -184,31 +113,19 @@
 
         <div class="quick-actions">
 
-          <button
-            type="button"
-            data-go-section="store"
-          >
+          <button data-go-section="store">
             Editar loja
           </button>
 
-          <button
-            type="button"
-            data-go-section="categories"
-          >
+          <button data-go-section="categories">
             Gerenciar categorias
           </button>
 
-          <button
-            type="button"
-            data-go-section="products"
-          >
+          <button data-go-section="products">
             Gerenciar produtos
           </button>
 
-          <button
-            type="button"
-            data-go-section="support"
-          >
+          <button data-go-section="support">
             Editar suporte
           </button>
 
@@ -221,10 +138,7 @@
 
     <!-- LOJA -->
 
-    <section
-      class="dashboard-section"
-      id="section-store"
-    >
+    <section class="dashboard-section" id="section-store">
 
       <div class="panel-card">
 
@@ -232,9 +146,7 @@
 
           <div>
 
-            <h2>
-              Informações da loja
-            </h2>
+            <h2>Informações da loja</h2>
 
             <p>
               Esses dados aparecem no site principal.
@@ -245,10 +157,7 @@
         </div>
 
 
-        <form
-          id="storeForm"
-          class="form-grid"
-        >
+        <form id="storeForm" class="form-grid">
 
           <label>
 
@@ -334,13 +243,10 @@
 
           <div>
 
-            <h2>
-              Categorias
-            </h2>
+            <h2>Categorias</h2>
 
             <p>
-              Crie, edite, remova e coloque imagens
-              nas categorias.
+              Adicione, edite, remova e coloque imagem nas categorias.
             </p>
 
           </div>
@@ -349,7 +255,6 @@
           <button
             class="primary-button"
             id="newCategoryButton"
-            type="button"
           >
             Nova categoria
           </button>
@@ -364,8 +269,6 @@
 
       </div>
 
-
-      <!-- FORMULÁRIO DA CATEGORIA -->
 
       <div
         class="panel-card editor-form-card"
@@ -402,16 +305,44 @@
           >
 
 
-          <label class="full">
+          <label>
 
             Nome da categoria
 
             <input
               id="categoryName"
               type="text"
-              placeholder="Ex: Otimização"
-              autocomplete="off"
               required
+            >
+
+          </label>
+
+
+          <label>
+
+            Identificador
+
+            <input
+              id="categorySlug"
+              type="text"
+              placeholder="Opcional — gerado automaticamente"
+            >
+
+            <small class="field-hint">
+              Opcional. Se deixar vazio, será gerado automaticamente.
+            </small>
+
+          </label>
+
+
+          <label class="full">
+
+            Imagem da categoria
+
+            <input
+              id="categoryImage"
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
             >
 
           </label>
@@ -430,19 +361,6 @@
             >
 
           </div>
-
-
-          <label class="full">
-
-            Imagem da categoria
-
-            <input
-              id="categoryImage"
-              type="file"
-              accept="image/png,image/jpeg,image/webp"
-            >
-
-          </label>
 
 
           <div class="form-actions full">
@@ -485,13 +403,10 @@
 
           <div>
 
-            <h2>
-              Produtos
-            </h2>
+            <h2>Produtos</h2>
 
             <p>
-              Edite nome, categoria, preços,
-              imagens, descrição e link de compra.
+              Edite nome, categoria, preços, imagens, descrição e link de compra.
             </p>
 
           </div>
@@ -500,7 +415,6 @@
           <button
             class="primary-button"
             id="newProductButton"
-            type="button"
           >
             Novo produto
           </button>
@@ -515,8 +429,6 @@
 
       </div>
 
-
-      <!-- FORMULÁRIO DO PRODUTO -->
 
       <div
         class="panel-card editor-form-card"
@@ -758,13 +670,10 @@
 
           <div>
 
-            <h2>
-              Redes e suporte
-            </h2>
+            <h2>Redes e suporte</h2>
 
             <p>
-              Edite os links que aparecem no painel
-              de suporte da loja.
+              Edite os links que aparecem no painel de suporte da loja.
             </p>
 
           </div>
@@ -894,7 +803,7 @@
 </div>
 
 
-<script src="dashboard.js?v=3"></script>
+<script src="dashboard.js"></script>
 
 </body>
 </html>
